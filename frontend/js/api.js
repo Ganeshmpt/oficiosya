@@ -10,10 +10,8 @@ function getToken()       { const s = getSession(); return s?.token || null; }
 
 function logout() {
   clearSession();
-  const base = location.pathname.includes('/pages/') ? '../' : './';
-  window.location.href = base + 'index.html';
+  window.location.href = '/oficiosya/frontend/index.html';
 }
-
 async function apiFetch(endpoint, options = {}) {
   const token   = getToken();
   const headers = { ...(options.headers || {}) };
