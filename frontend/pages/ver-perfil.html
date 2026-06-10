@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil del Trabajador — OficiosYA</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    .perfil-wrap { max-width:900px; margin:0 auto; padding:32px 24px; }
+    .back-link { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:#1D9E75; text-decoration:none; margin-bottom:20px; font-weight:600; }
+    .perfil-header { display:flex; gap:24px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
+    .foto-circle { width:100px; height:100px; border-radius:50%; background:#1D9E75; display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:800; color:#fff; overflow:hidden; flex-shrink:0; }
+    .foto-circle img { width:100%; height:100%; object-fit:cover; }
+    .info h2 { font-size:22px; font-weight:800; margin-bottom:4px; }
+    .info p { margin:0 0 4px 0; font-size:14px; color:#6B7280; }
+    .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; margin-top:4px; margin-right:4px; }
+    .badge-verif  { background:#D1FAE5; color:#065F46; }
+    .badge-novert { background:#FEF3C7; color:#92400E; }
+    .seccion { margin-top:28px; }
+    .seccion h3 { font-size:16px; font-weight:700; margin-bottom:12px; border-bottom:1px solid #E5E7EB; padding-bottom:8px; }
+    .grid-trabajos { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px; }
+    .card-trabajo { background:#fff; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden; }
+    .card-trabajo img { width:100%; height:150px; object-fit:cover; }
+    .card-trabajo .desc { padding:10px; font-size:13px; color:#374151; }
+    .doc-item { display:flex; align-items:center; gap:12px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:12px; margin-bottom:8px; }
+    .doc-item img { width:60px; height:60px; object-fit:cover; border-radius:6px; }
+    .empty { text-align:center; color:#9CA3AF; padding:20px; }
+    /* Modal imagen ampliada */
+.img-modal-vp { position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:2000; cursor:zoom-out; }
+.img-modal-vp img { max-width:92vw; max-height:90vh; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+
+    /* Reputación */
+    .reputacion-box { display:flex; gap:16px; flex-wrap:wrap; margin:12px 0; }
+    .rep-stat { background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:12px 18px; text-align:center; min-width:100px; }
+    .rep-stat .rep-val { font-size:24px; font-weight:900; color:#1D9E75; line-height:1; }
+    .rep-stat .rep-lbl { font-size:11px; color:#6B7280; margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:.4px; }
+    .stars-row { display:flex; align-items:center; gap:3px; color:#F59E0B; font-size:18px; margin:4px 0; }
+    .stars-row span { font-size:13px; color:#6B7280; margin-left:4px; }
+
+    /* Reseñas */
+    .reseña-card { background:#fff; border:1px solid #E5E7EB; border-radius:10px; padding:14px; margin-bottom:10px; }
+    .reseña-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .reseña-avatar { width:36px; height:36px; border-radius:50%; background:#1D9E75; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
+    .reseña-avatar img { width:100%; height:100%; object-fit:cover; }
+    .reseña-nombre { font-size:13px; font-weight:700; color:#111827; }
+    .reseña-fecha  { font-size:11px; color:#9CA3AF; }
+    .reseña-stars  { color:#F59E0B; font-size:14px; }
+    .reseña-texto  { font-size:13px; color:#374151; line-height:1.5; margin-top:6px; }
+
+    /* Botones */
+    .btn-chat { display:inline-flex; align-items:center; gap:8px; background:#1D9E75; color:#fff; border:none; border-radius:10px; padding:10px 20px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; margin-top:12px; text-decoration:none; transition:background .15s; }
+    .btn-chat:hover { background:#0F6E56; }
+
+    /* Mapa zona */
+    #mapa-zona { height:260px; border-radius:12px; border:1px solid #E5E7EB; margin-top:12px; z-index:1; }
+    .mapa-info { display:flex; align-items:center; gap:8px; font-size:13px; color:#6B7280; margin-bottom:8px; }
+    .mapa-info svg { flex-shrink:0; color:#1D9E75; }
+    .mapa-loading { display:flex; align-items:center; justify-content:center; height:260px; background:#F9FAFB; border-radius:12px; border:1px solid #E5E7EB; color:#9CA3AF; font-size:13px; gap:8px; }
+
+    /* Responsive */
+    @media(max-width:640px){
+      .perfil-wrap { padding:20px 14px; }
+      .perfil-header { flex-direction:column; align-items:flex-start; gap:14px; }
+      .foto-circle { width:80px; height:80px; font-size:28px; }
+      .info h2 { font-size:18px; }
+      .reputacion-box { gap:10px; }
+      .rep-stat { padding:10px 12px; min-width:80px; }
+      .rep-stat .rep-val { font-size:20px; }
+      .grid-trabajos { grid-template-columns:1fr 1fr; }
+      #mapa-zona { height:200px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="../index.html" class="nav-logo">
+        <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" opacity=".9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="17" cy="6" r="3" fill="#C8860A"/></svg></div>
+        <span class="logo-text">Oficios<span class="logo-ya">YA</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html" class="nav-link">Inicio</a>
+        <a href="explorar.html" class="nav-link">Explorar</a>
+      </div>
+      <div class="nav-actions" id="nav-guest">
+        <a href="login.html" class="btn-outline">Iniciar sesión</a>
+        <a href="registro.html" class="btn-primary">Registrarse</a>
+      </div>
+      <div class="nav-actions nav-user-area" id="nav-auth" style="display:none;">
+        <div class="nav-avatar-btn" onclick="toggleUserMenu()">
+          <div class="nav-avatar" id="nav-avatar">U</div>
+          <span id="nav-username">Usuario</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+          <a href="dashboard.html" class="dropdown-item">Mi panel</a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-logout" onclick="logout()">Cerrar sesión</button>
+        </div>
+      </div>
+      <!-- Hamburguesa -->
+      <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <!-- Menú móvil -->
+    <div class="nav-mobile-menu" id="mobileMenu">
+      <a href="../index.html" class="nav-mobile-link">🏠 Inicio</a>
+      <a href="explorar.html" class="nav-mobile-link">🔍 Explorar</a>
+      <div class="nav-mobile-divider"></div>
+      <div id="mob-guest-actions" class="nav-mobile-actions">
+        <a href="login.html"    class="nav-mobile-btn-out">Iniciar sesión</a>
+        <a href="registro.html" class="nav-mobile-btn-pri">Registrarse</a>
+      </div>
+      <div id="mob-auth-actions" style="display:none;">
+        <a href="dashboard.html" class="nav-mobile-link">Mi panel</a>
+        <a href="perfil.html"    class="nav-mobile-link">Mi perfil</a>
+        <button onclick="logout()" class="nav-mobile-link" style="background:none;border:none;color:#EF4444;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;padding:12px 8px;">Cerrar sesión</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="perfil-wrap">
+    <a href="javascript:history.back()" class="back-link">← Volver</a>
+    <div id="perfil-content">Cargando...</div>
+  </div>
+<div class="img-modal-vp" id="imgModalVP" onclick="this.style.display='none'">
+  <button id="modal-prev" onclick="modalAnterior(event)" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;color:#fff;font-size:28px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;">‹</button>
+  <img id="imgModalVPSrc" src="" alt="Imagen ampliada" onclick="event.stopPropagation()">
+  <button id="modal-next" onclick="modalSiguiente(event)" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;color:#fff;font-size:28px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;">›</button>
+  <span id="modal-counter" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;font-weight:600;background:rgba(0,0,0,.4);padding:4px 12px;border-radius:999px;"></span>
+</div>
+  <!-- Leaflet JS -->
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    // ── Navbar ────────────────────────────────────────────
+    function toggleUserMenu() {
+      const d = document.getElementById('userDropdown');
+      d.style.display = d.style.display === 'none' ? 'flex' : 'none';
+    }
+    function toggleMobileMenu() {
+      const m = document.getElementById('mobileMenu');
+      const h = document.getElementById('hamburger');
+      const open = m.classList.toggle('open');
+      h.classList.toggle('open', open);
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.nav-user-area')) document.getElementById('userDropdown').style.display = 'none';
+      if (!e.target.closest('.navbar')) {
+        document.getElementById('mobileMenu').classList.remove('open');
+        document.getElementById('hamburger').classList.remove('open');
+      }
+    });
+
+    // ── Sesión ────────────────────────────────────────────
+    const urlParams    = new URLSearchParams(window.location.search);
+    const trabajadorId = urlParams.get('id');
+    if (!trabajadorId) window.location.href = 'explorar.html';
+
+    const session = getSession();
+    const miId    = session?.usuario?.id;
+
+    if (session) {
+      document.getElementById('nav-guest').style.display = 'none';
+      document.getElementById('nav-auth').style.display  = 'flex';
+      document.getElementById('mob-guest-actions').style.display = 'none';
+      document.getElementById('mob-auth-actions').style.display  = 'block';
+      const u  = session.usuario;
+      const av = document.getElementById('nav-avatar');
+      av.textContent = ((u.nombre||'U')[0] + (u.apellido||'')[0]).toUpperCase();
+      document.getElementById('nav-username').textContent = u.nombre || 'Usuario';
+    }
+
+    function irAlChat() {
+      if (!session) { window.location.href = `login.html?redirect=ver-perfil.html?id=${trabajadorId}`; return; }
+      window.location.href = `chat.html?userId=${trabajadorId}`;
+    }
+
+    // ── Estrellas ─────────────────────────────────────────
+    function renderEstrellas(puntaje, max = 5) {
+      const llenas = Math.round(puntaje || 0);
+      return '★'.repeat(llenas) + '<span style="color:#D1D5DB;">' + '★'.repeat(max - llenas) + '</span>';
+    }
+
+    // ── Mapa Leaflet ──────────────────────────────────────
+    let mapaInstancia = null;
+
+    async function geocodificarZona(zona) {
+      // Intenta convertir "Ambato - Centro" → coordenadas usando Nominatim
+      const query = encodeURIComponent(`${zona}, Tungurahua, Ecuador`);
+      try {
+        const r    = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`);
+        const data = await r.json();
+        if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      } catch(e) {}
+      // Fallback: centro de Ambato
+      return { lat: -1.2491, lng: -78.6167 };
+    }
+
+    async function iniciarMapa(zona, nombreTrabajador) {
+      const contenedor = document.getElementById('mapa-zona');
+      if (!contenedor) return;
+
+      const coords = await geocodificarZona(zona);
+
+      // Destruir mapa anterior si existe
+      if (mapaInstancia) { mapaInstancia.remove(); mapaInstancia = null; }
+
+      mapaInstancia = L.map('mapa-zona', { zoomControl: true, scrollWheelZoom: false }).setView([coords.lat, coords.lng], 14);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+      }).addTo(mapaInstancia);
+
+      // Icono personalizado verde
+      const iconoVerde = L.divIcon({
+        className: '',
+        html: `<div style="width:36px;height:36px;background:#1D9E75;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,.3);">
+                 <div style="transform:rotate(45deg);width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px;">🔧</div>
+               </div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      });
+
+      L.marker([coords.lat, coords.lng], { icon: iconoVerde })
+        .addTo(mapaInstancia)
+        .bindPopup(`
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;padding:4px;">
+            <strong style="font-size:13px;">${nombreTrabajador}</strong><br>
+            <span style="font-size:12px;color:#6B7280;">📍 ${zona}</span><br>
+            <span style="font-size:11px;color:#1D9E75;font-weight:600;">Zona de operación</span>
+          </div>`)
+        .openPopup();
+
+      // Círculo de zona aproximada (radio ~800m)
+      L.circle([coords.lat, coords.lng], {
+        color: '#1D9E75',
+        fillColor: '#1D9E75',
+        fillOpacity: 0.08,
+        weight: 1.5,
+        radius: 800
+      }).addTo(mapaInstancia);
+
+      // Forzar redibujado por si el contenedor no tenía tamaño aún
+      setTimeout(() => mapaInstancia.invalidateSize(), 200);
+    }
+    let _galeria = [];
+let _galeriaIdx = 0;
+
+function abrirImagen(url, lista) {
+  _galeria = lista || [url];
+  _galeriaIdx = _galeria.indexOf(url);
+  if (_galeriaIdx === -1) _galeriaIdx = 0;
+  mostrarImagenModal();
+}
+
+function mostrarImagenModal() {
+  document.getElementById('imgModalVPSrc').src = _galeria[_galeriaIdx];
+  document.getElementById('imgModalVP').style.display = 'flex';
+  document.getElementById('modal-counter').textContent = `${_galeriaIdx + 1} / ${_galeria.length}`;
+  document.getElementById('modal-prev').style.display = _galeria.length > 1 ? 'flex' : 'none';
+  document.getElementById('modal-next').style.display = _galeria.length > 1 ? 'flex' : 'none';
+}
+
+function modalAnterior(e) { e.stopPropagation(); _galeriaIdx = (_galeriaIdx - 1 + _galeria.length) % _galeria.length; mostrarImagenModal(); }
+function modalSiguiente(e) { e.stopPropagation(); _galeriaIdx = (_galeriaIdx + 1) % _galeria.length; mostrarImagenModal(); }
+    // ── Cargar perfil ─────────────────────────────────────
+    async function cargarPerfil() {
+      try {
+        const data = await apiFetch(`/perfil/trabajador/${trabajadorId}`);
+        const { usuario, perfil, trabajos, verificaciones, reseñas = [], reputacion = {} } = data;
+
+        const nombreCompleto = `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim();
+        const iniciales = ((usuario.nombre||'')[0] + (usuario.apellido||'')[0]).toUpperCase();
+        const esMiPerfil = miId && parseInt(trabajadorId) === miId;
+
+        const rating    = reputacion.rating_promedio      || perfil?.rating_promedio      || null;
+        const totalCals = reputacion.total_calificaciones  || perfil?.total_calificaciones  || 0;
+        const servicios = reputacion.servicios_completados || perfil?.servicios_completados || 0;
+
+        const reputacionHTML = `
+          <div class="reputacion-box">
+            <div class="rep-stat">
+              <div class="rep-val">${rating ? rating : '—'}</div>
+              <div class="stars-row">${rating ? renderEstrellas(rating) : '☆☆☆☆☆'}</div>
+              <div class="rep-lbl">Calificación</div>
+            </div>
+            <div class="rep-stat">
+              <div class="rep-val">${servicios}</div>
+              <div class="rep-lbl">Servicios completados</div>
+            </div>
+            <div class="rep-stat">
+              <div class="rep-val">${totalCals}</div>
+              <div class="rep-lbl">Reseñas recibidas</div>
+            </div>
+          </div>`;
+
+        let html = `
+          <div class="perfil-header">
+            <div class="foto-circle">
+              ${usuario.foto_url ? `<img src="${usuario.foto_url}" alt="${nombreCompleto}">` : iniciales}
+            </div>
+            <div class="info">
+              <h2>${nombreCompleto}</h2>
+              <p>${perfil?.titulo || 'Trabajador'} | ${perfil?.categoria_nombre || 'Sin categoría'}</p>
+              <p>📍 ${usuario.zona || 'Sin zona'}</p>
+              ${reputacionHTML}
+              <span class="badge ${usuario.verificado ? 'badge-verif' : 'badge-novert'}">
+                ${usuario.verificado ? '✓ Verificado' : 'Sin verificar'}
+              </span>
+              ${!esMiPerfil ? `
+                <button class="btn-chat" onclick="irAlChat()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  ${session ? 'Enviar mensaje' : 'Inicia sesión para chatear'}
+                </button>` : ''}
+            </div>
+          </div>`;
+
+        // ── Sobre mí ──────────────────────────────────
+        if (perfil) {
+          html += `
+            <div class="seccion">
+              <h3>Sobre mí</h3>
+              <p style="font-size:14px;color:#374151;line-height:1.6;">${perfil.descripcion || 'Sin descripción.'}</p>
+              <p style="font-size:13px;color:#6B7280;margin-top:8px;">
+                🕐 ${perfil.anos_experiencia || 0} años de experiencia
+                ${perfil.precio_desde ? ` &nbsp;|&nbsp; 💰 Desde $${perfil.precio_desde}` : ''}
+              </p>
+            </div>`;
+        }
+
+        // ── Zona de operación (mapa) ───────────────────
+        const zona = usuario.zona || null;
+        html += `
+          <div class="seccion">
+            <h3>🗺️ Zona de operación</h3>
+            <div class="mapa-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Este trabajador opera en: <strong>${zona || 'Zona no especificada'}</strong>
+            </div>
+            ${zona
+              ? `<div id="mapa-zona"></div>
+                 <p style="font-size:11px;color:#9CA3AF;margin-top:6px;text-align:right;">Mapa aproximado de la zona · © OpenStreetMap</p>`
+              : `<div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:24px;text-align:center;color:#9CA3AF;font-size:13px;">Este trabajador no ha especificado su zona.</div>`
+            }
+          </div>`;
+
+        // ── Reseñas ───────────────────────────────────
+        html += `<div class="seccion"><h3>Reseñas de clientes</h3>`;
+        if (reseñas.length) {
+          reseñas.forEach(r => {
+            const inicialAutor = (r.autor_nombre||'U')[0].toUpperCase();
+            html += `
+              <div class="reseña-card">
+                <div class="reseña-header">
+                  <div class="reseña-avatar">
+                    ${r.autor_foto ? `<img src="${r.autor_foto}" alt="${r.autor_nombre}">` : inicialAutor}
+                  </div>
+                  <div>
+                    <div class="reseña-nombre">${r.autor_nombre || 'Cliente'}</div>
+                    <div class="reseña-fecha">${new Date(r.createdat).toLocaleDateString('es')}</div>
+                  </div>
+                  <div class="reseña-stars" style="margin-left:auto;">${renderEstrellas(r.puntaje)}</div>
+                </div>
+                ${r.comentario ? `<div class="reseña-texto">"${r.comentario}"</div>` : ''}
+              </div>`;
+          });
+        } else {
+          html += `<div class="empty">Aún no tiene reseñas.</div>`;
+        }
+        html += `</div>`;
+
+        // ── Trabajos realizados ───────────────────────
+       html += `<div class="seccion"><h3>Trabajos Realizados</h3>`;
+        if (trabajos.length) {
+          html += `<div class="grid-trabajos">`;
+          const urlsTrabajos = trabajos.map(t => t.url_imagen);
+          const listaEncoded = encodeURIComponent(JSON.stringify(urlsTrabajos));
+          trabajos.forEach(t => {
+            html += `
+              <div class="card-trabajo">
+                <img src="${t.url_imagen}" alt="Trabajo" style="cursor:zoom-in;"
+                     data-lista="${listaEncoded}"
+                     data-url="${t.url_imagen}"
+                     onclick="abrirImagen(this.dataset.url, JSON.parse(decodeURIComponent(this.dataset.lista)))">
+                ${t.descripcion ? `<div class="desc">${t.descripcion}</div>` : ''}
+              </div>`;
+          });
+          html += `</div>`;
+        } else {
+          html += `<div class="empty">No ha subido trabajos aún.</div>`;
+        }
+        html += `</div>`;
+
+        // ── Documentación ─────────────────────────────
+        if (verificaciones.length) {
+          html += `<div class="seccion"><h3>Documentación Verificada</h3>`;
+          verificaciones.forEach(v => {
+            html += `
+              <div class="doc-item" style="cursor:zoom-in;" onclick="abrirImagen('${v.doc_url}')">
+                <img src="${v.doc_url}" alt="Documento">
+                <div>
+                  <p style="font-weight:600;margin:0;">Documento verificado</p>
+                  <p style="font-size:12px;color:#6B7280;">${new Date(v.createdat).toLocaleDateString('es')}</p>
+                </div>
+              </div>`;
+          });
+          html += `</div>`;
+        }
+
+        document.getElementById('perfil-content').innerHTML = html;
+
+        // Iniciar mapa DESPUÉS de que el DOM esté listo
+        if (zona) {
+          requestAnimationFrame(() => iniciarMapa(zona, nombreCompleto));
+        }
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('perfil-content').innerHTML = `<div class="empty">Error al cargar el perfil.</div>`;
+      }
+    }
+
+    cargarPerfil();
+  </script>
+</body>
+</html>

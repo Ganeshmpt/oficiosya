@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrarse — OficiosYA</title>
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body class="auth-page">
+<div class="auth-layout">
+
+  <div class="auth-left">
+    <a href="../index.html" class="auth-logo">
+      <div class="logo-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" opacity=".9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="17" cy="6" r="3" fill="#C8860A"/></svg></div>
+      <span class="logo-text">Oficios<span class="logo-ya">YA</span></span>
+    </a>
+    <div class="auth-left-content">
+      <h2 class="auth-left-title">Únete a la comunidad de talento local.</h2>
+      <div class="perk"><div class="perk-icon">✓</div><div><div class="perk-title">Un solo perfil, dos modos</div><div class="perk-sub">Puedes ofrecer Y solicitar servicios con la misma cuenta.</div></div></div>
+      <div class="perk"><div class="perk-icon">✓</div><div><div class="perk-title">Perfil verificado</div><div class="perk-sub">Genera confianza con clientes y trabajadores.</div></div></div>
+      <div class="perk"><div class="perk-icon">✓</div><div><div class="perk-title">100% gratuito</div><div class="perk-sub">Sin costos ocultos ni suscripciones.</div></div></div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-form-wrapper">
+      <h1 class="auth-form-title">Crea tu cuenta</h1>
+      <p class="auth-form-sub">Completa tus datos para comenzar</p>
+
+      <div id="alert-box" class="alert-box" style="display:none;"></div>
+
+      <form class="auth-form" onsubmit="handleRegister(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input type="text" id="nombre" class="form-input" placeholder="Juan" required>
+            <span class="field-error" id="nombre-error"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Apellido</label>
+            <input type="text" id="apellido" class="form-input" placeholder="Pérez">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            <input type="email" id="email" class="form-input" placeholder="tucorreo@email.com" required>
+          </div>
+          <span class="field-error" id="email-error"></span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <input type="tel" id="telefono" class="form-input" placeholder="0987654321">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Zona / Sector <span style="display:inline-block;font-size:10px;font-weight:700;background:#D1FAE5;color:#065F46;padding:2px 6px;border-radius:4px;margin-left:4px;vertical-align:middle;">Tungurahua</span></label>
+            <select id="zona" class="form-input">
+              <option value="">— Selecciona tu zona —</option>
+             <optgroup label="🏙 Ambato">
+            <option value="Ambato - Centro">Ambato - Centro</option>
+            <option value="Ambato - La Merced">Ambato - La Merced</option>
+            <option value="Ambato - Ficoa">Ambato - Ficoa</option>
+            <option value="Ambato - Atocha">Ambato - Atocha</option>
+            <option value="Ambato - Huachi">Ambato - Huachi</option>
+            <option value="Ambato - Ingahurco">Ambato - Ingahurco</option>
+            <option value="Ambato - Miraflores">Ambato - Miraflores</option>
+            <option value="Ambato - Cashapamba">Ambato - Cashapamba</option>
+            <option value="Ambato - El Recreo">Ambato - El Recreo</option>
+            <option value="Ambato - Izamba">Ambato - Izamba</option>
+            <option value="Ambato - Picaihua">Ambato - Picaihua</option>
+            <option value="Ambato - Quisapincha">Ambato - Quisapincha</option>
+            <option value="Ambato - Juan Benigno Vela">Ambato - Juan Benigno Vela</option>
+            <option value="Ambato - Pishilata">Ambato - Pishilata</option>
+          </optgroup>
+          <optgroup label="🏘 Baños de Agua Santa">
+            <option value="Baños - Centro">Baños - Centro</option>
+            <option value="Baños - El Salado">Baños - El Salado</option>
+            <option value="Baños - Lligua">Baños - Lligua</option>
+            <option value="Baños - Ulba">Baños - Ulba</option>
+          </optgroup>
+          <optgroup label="🏘 Pelileo">
+            <option value="Pelileo - Centro">Pelileo - Centro</option>
+            <option value="Pelileo - Salasaca">Pelileo - Salasaca</option>
+            <option value="Pelileo - Benítez">Pelileo - Benítez</option>
+            <option value="Pelileo - García Moreno">Pelileo - García Moreno</option>
+          </optgroup>
+          <optgroup label="🏘 Píllaro">
+            <option value="Píllaro - Centro">Píllaro - Centro</option>
+            <option value="Píllaro - San Andrés">Píllaro - San Andrés</option>
+            <option value="Píllaro - Marcos Espinel">Píllaro - Marcos Espinel</option>
+          </optgroup>
+          <optgroup label="🏘 Patate">
+            <option value="Patate - Centro">Patate - Centro</option>
+            <option value="Patate - Los Andes">Patate - Los Andes</option>
+          </optgroup>
+          <optgroup label="🏘 Tisaleo">
+            <option value="Tisaleo - Centro">Tisaleo - Centro</option>
+          </optgroup>
+          <optgroup label="🏘 Mocha">
+            <option value="Mocha - Centro">Mocha - Centro</option>
+          </optgroup>
+          <optgroup label="🏘 Quero">
+            <option value="Quero - Centro">Quero - Centro</option>
+          </optgroup>
+          <optgroup label="🏘 Cevallos">
+            <option value="Cevallos - Centro">Cevallos - Centro</option>
+          </optgroup>
+          <optgroup label="🏘 Santiago de Píllaro">
+            <option value="Santiago de Píllaro">Santiago de Píllaro</option>
+          </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="password" class="form-input" placeholder="Mínimo 8 caracteres" required oninput="checkPasswordStrength(this.value)">
+            <button type="button" class="toggle-pass" onclick="togglePassword('password',this)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="password-strength" id="pass-strength" style="display:none;">
+            <div class="strength-bars">
+              <div class="strength-bar" id="bar1"></div><div class="strength-bar" id="bar2"></div>
+              <div class="strength-bar" id="bar3"></div><div class="strength-bar" id="bar4"></div>
+            </div>
+            <span id="strength-label"></span>
+          </div>
+          <span class="field-error" id="pass-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirmar contraseña</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="confirmar" class="form-input" placeholder="Repite tu contraseña" required>
+            <button type="button" class="toggle-pass" onclick="togglePassword('confirmar',this)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error" id="confirm-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Documento de identidad <span style="font-weight:400;color:#9CA3AF;">(opcional, para verificación)</span></label>
+          <div class="file-upload-area" id="file-area"
+               onclick="document.getElementById('doc-file').click()"
+               ondragover="this.classList.add('drag-over');event.preventDefault()"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleDrop(event)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="upload-text">Arrastra o <span>selecciona un archivo</span></div>
+            <div class="upload-hint">JPG, PNG, PDF — Máx. 5MB</div>
+            <div id="file-name" class="file-selected" style="display:none;"></div>
+          </div>
+          <input type="file" id="doc-file" accept=".jpg,.jpeg,.png,.pdf" style="display:none;" onchange="fileSelected(this)">
+        </div>
+
+        <div class="form-group" style="flex-direction:row;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="terms" class="checkbox-input" required>
+            <span class="checkbox-custom"></span>
+            Acepto los <a href="#" class="link-inline">Términos de Servicio</a> y la <a href="#" class="link-inline">Política de Privacidad</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">
+          <span id="btn-text">Crear cuenta gratis</span>
+          <div id="btn-spinner" class="spinner" style="display:none;"></div>
+        </button>
+      </form>
+
+      <p class="auth-switch">¿Ya tienes cuenta? <a href="login.html" class="auth-switch-link">Inicia sesión</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+if (getSession()) window.location.href = 'dashboard.html';
+
+function fileSelected(input) {
+  if (!input.files.length) return;
+  const f = input.files[0];
+  if (f.size > 5 * 1024 * 1024) { showAlert('El archivo supera 5MB.', 'error'); input.value = ''; return; }
+  const fn = document.getElementById('file-name');
+  fn.textContent = '✓ ' + f.name;
+  fn.style.display = 'block';
+  document.getElementById('file-area').style.borderColor = '#1D9E75';
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('file-area').classList.remove('drag-over');
+  const dt = e.dataTransfer;
+  if (dt.files.length) {
+    document.getElementById('doc-file').files = dt.files;
+    fileSelected(document.getElementById('doc-file'));
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  hideAlert();
+  // Limpiar errores
+  ['nombre-error','email-error','pass-error','confirm-error'].forEach(id => {
+    document.getElementById(id).textContent = '';
+  });
+
+  const nombre    = document.getElementById('nombre').value.trim();
+  const apellido  = document.getElementById('apellido').value.trim();
+  const email     = document.getElementById('email').value.trim();
+  const telefono  = document.getElementById('telefono').value.trim();
+  const zona      = document.getElementById('zona').value.trim();
+  const password  = document.getElementById('password').value;
+  const confirmar = document.getElementById('confirmar').value;
+  const terms     = document.getElementById('terms').checked;
+  let valid = true;
+
+  if (!nombre)              { document.getElementById('nombre-error').textContent  = 'El nombre es requerido.'; valid = false; }
+  if (!isValidEmail(email)) { document.getElementById('email-error').textContent   = 'Ingresa un correo válido.'; valid = false; }
+  if (password.length < 8)  { document.getElementById('pass-error').textContent    = 'Mínimo 8 caracteres.'; valid = false; }
+  if (password !== confirmar){ document.getElementById('confirm-error').textContent = 'Las contraseñas no coinciden.'; valid = false; }
+  if (!terms)               { showAlert('Debes aceptar los Términos de Servicio.', 'error'); valid = false; }
+  if (!valid) return;
+
+  setLoading(true);
+  try {
+    const data = await Auth.register({ nombre, apellido, email, telefono, zona, password, confirmarPassword: confirmar });
+    setSession(data);
+    showAlert('¡Cuenta creada! Redirigiendo...', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+  } catch (err) {
+    setLoading(false);
+    showAlert(err.message, 'error');
+  }
+}
+</script>
+</body>
+</html>

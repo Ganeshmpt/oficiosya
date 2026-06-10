@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil — OficiosYA</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <style>
+    .perfil-wrap  { max-width:800px; margin:0 auto; padding:32px 24px; }
+    .perfil-card  { background:#fff; border-radius:16px; border:1px solid #E5E7EB; padding:28px; margin-bottom:20px; }
+    .foto-header  { display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+    .foto-wrap    { position:relative; flex-shrink:0; }
+    .foto-circle  { width:100px; height:100px; border-radius:50%; background:#1D9E75; display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:800; color:#fff; overflow:hidden; object-fit:cover; border:3px solid #E5E7EB; }
+    .foto-circle img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .foto-edit-btn { position:absolute; bottom:2px; right:2px; width:30px; height:30px; background:#1D9E75; border:2px solid #fff; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.2); transition:background .15s; }
+    .foto-edit-btn:hover { background:#0F6E56; }
+    .perfil-meta  { flex:1; }
+    .perfil-nombre { font-size:22px; font-weight:800; color:#111827; }
+    .perfil-email  { font-size:14px; color:#6B7280; margin-top:2px; }
+    .perfil-zona   { font-size:13px; color:#1D9E75; font-weight:600; margin-top:4px; }
+    .badge-verif  { display:inline-flex; align-items:center; gap:5px; background:#D1FAE5; color:#065F46; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; margin-top:8px; }
+    .badge-noverif{ display:inline-flex; align-items:center; gap:5px; background:#FEF3C7; color:#92400E; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; margin-top:8px; }
+    .section-title { font-size:15px; font-weight:700; color:#111827; margin-bottom:16px; border-bottom:1px solid #F3F4F6; padding-bottom:10px; }
+    .form-grid    { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .info-row     { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:12px 0; border-bottom:1px solid #F9FAFB; }
+    .info-label   { font-size:12px; color:#9CA3AF; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+    .info-value   { font-size:14px; font-weight:600; color:#111827; }
+    .btn-sm       { padding:6px 16px; border-radius:8px; border:1.5px solid #E5E7EB; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; background:#fff; color:#374151; transition:all .15s; }
+    .btn-sm:hover { border-color:#1D9E75; color:#1D9E75; }
+    .btn-danger   { border-color:#FEE2E2; color:#EF4444; }
+    .btn-danger:hover { background:#FEE2E2; }
+    @media(max-width:600px) { .form-grid{grid-template-columns:1fr;} .foto-header{flex-direction:column;text-align:center;} }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" opacity=".9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="17" cy="6" r="3" fill="#C8860A"/></svg></div>
+      <span class="logo-text">Oficios<span class="logo-ya">YA</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="dashboard.html" class="nav-link">Mi Panel</a>
+      <a href="explorar.html"  class="nav-link">Explorar</a>
+      <a href="solicitudes.html" class="nav-link">Solicitudes</a>
+      <a href="chat.html"      class="nav-link">Chat</a>
+      <a href="perfil.html"    class="nav-link active">Mi Perfil</a>
+    </div>
+    <div class="nav-actions nav-user-area" id="nav-auth">
+      
+      <div class="nav-notification" id="notif-btn" onclick="toggleNotificaciones(event)" style="position:relative;margin-right:12px;cursor:pointer;display:flex;align-items:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span id="notif-badge" style="display:none;position:absolute;top:-6px;right:-6px;background:#EF4444;color:#fff;font-size:10px;font-weight:800;padding:2px 5px;border-radius:999px;border:2px solid #1D9E75;min-width:18px;text-align:center;">0</span>
+        <div id="notifDropdown" style="display:none;position:absolute;top:45px;right:-10px;width:320px;background:#fff;border:1px solid #E5E7EB;border-radius:12px;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);z-index:1000;color:#111827;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-weight:700;border-bottom:1px solid #E5E7EB;font-size:14px;">
+            <span>Notificaciones</span>
+            <button onclick="marcarTodasLeidas(event)" style="font-size:11px;color:#1D9E75;background:none;border:none;cursor:pointer;font-weight:600;font-family:inherit;">Marcar todas como leídas</button>
+          </div>
+          <div id="notif-body" style="max-height:320px;overflow-y:auto;">
+            <div style="padding:32px 16px;text-align:center;color:#9CA3AF;font-size:13px;">Cargando...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-avatar-btn" onclick="toggleUserMenu()">
+        <div class="nav-avatar" id="nav-avatar">U</div>
+        <span id="nav-username">Usuario</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="user-dropdown" id="userDropdown" style="display:none;">
+        <div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;">
+          <div style="font-weight:600;font-size:14px;" id="drop-name">—</div>
+          <div style="font-size:12px;color:#6B7280;" id="drop-email">—</div>
+        </div>
+        <a href="dashboard.html"   class="dropdown-item">Mi panel</a>
+        <a href="perfil.html"      class="dropdown-item">Mi perfil</a>
+        <a href="solicitudes.html" class="dropdown-item">Solicitudes</a>
+        <a href="chat.html"        class="dropdown-item">Mis mensajes</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item dropdown-logout" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="perfil-wrap">
+  <div id="alert-box" class="alert-box" style="display:none;margin-bottom:16px;"></div>
+
+  <div class="perfil-card">
+    <div class="foto-header">
+      <div class="foto-wrap">
+        <div class="foto-circle" id="foto-circle">U</div>
+        <div class="foto-edit-btn" onclick="document.getElementById('foto-input').click()" title="Cambiar foto">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <input type="file" id="foto-input" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="subirFoto(this)">
+      </div>
+      <div class="perfil-meta">
+        <div class="perfil-nombre" id="perfil-nombre">Cargando...</div>
+        <div class="perfil-email"  id="perfil-email">—</div>
+        <div class="perfil-zona"   id="perfil-zona"></div>
+        <div id="perfil-badge"></div>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:#9CA3AF;">
+      Haz clic en el icono de camara para cambiar tu foto de perfil. Formatos: JPG, PNG, WebP. Max 5MB.
+    </div>
+  </div>
+
+  <div class="perfil-card">
+    <div class="section-title">Editar datos personales</div>
+    <div id="alert-datos" class="alert-box" style="display:none;margin-bottom:14px;"></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Nombre *</label>
+        <input type="text" id="p-nombre" class="form-input" placeholder="Tu nombre">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Apellido</label>
+        <input type="text" id="p-apellido" class="form-input" placeholder="Tu apellido">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefono</label>
+        <input type="tel" id="p-telefono" class="form-input" placeholder="0987654321">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Zona / Sector <span style="display:inline-block;font-size:10px;font-weight:700;background:#D1FAE5;color:#065F46;padding:2px 6px;border-radius:4px;margin-left:4px;vertical-align:middle;">Tungurahua</span></label>
+        <select id="p-zona" class="form-input">
+          <option value="">— Selecciona tu zona —</option>
+          <optgroup label="🏙 Ambato">
+            <option value="Ambato - Centro">Ambato - Centro</option>
+            <option value="Ambato - La Merced">Ambato - La Merced</option>
+            <option value="Ambato - Ficoa">Ambato - Ficoa</option>
+            <option value="Ambato - Atocha">Ambato - Atocha</option>
+            <option value="Ambato - Huachi">Ambato - Huachi</option>
+            <option value="Ambato - Ingahurco">Ambato - Ingahurco</option>
+            <option value="Ambato - Miraflores">Ambato - Miraflores</option>
+            <option value="Ambato - Cashapamba">Ambato - Cashapamba</option>
+            <option value="Ambato - El Recreo">Ambato - El Recreo</option>
+            <option value="Ambato - Izamba">Ambato - Izamba</option>
+            <option value="Ambato - Picaihua">Ambato - Picaihua</option>
+            <option value="Ambato - Quisapincha">Ambato - Quisapincha</option>
+            <option value="Ambato - Juan Benigno Vela">Ambato - Juan Benigno Vela</option>
+            <option value="Ambato - Pishilata">Ambato - Pishilata</option>
+          </optgroup>
+          <optgroup label="🏘 Baños de Agua Santa">
+            <option value="Baños - Centro">Baños - Centro</option>
+            <option value="Baños - El Salado">Baños - El Salado</option>
+            <option value="Baños - Lligua">Baños - Lligua</option>
+            <option value="Baños - Ulba">Baños - Ulba</option>
+          </optgroup>
+          <optgroup label="🏘 Pelileo">
+            <option value="Pelileo - Centro">Pelileo - Centro</option>
+            <option value="Pelileo - Salasaca">Pelileo - Salasaca</option>
+            <option value="Pelileo - Benítez">Pelileo - Benítez</option>
+            <option value="Pelileo - García Moreno">Pelileo - García Moreno</option>
+          </optgroup>
+          <optgroup label="🏘 Píllaro">
+            <option value="Píllaro - Centro">Píllaro - Centro</option>
+            <option value="Píllaro - San Andrés">Píllaro - San Andrés</option>
+            <option value="Píllaro - Marcos Espinel">Píllaro - Marcos Espinel</option>
+          </optgroup>
+          <optgroup label="🏘 Patate">
+            <option value="Patate - Centro">Patate - Centro</option>
+            <option value="Patate - Los Andes">Patate - Los Andes</option>
+          </optgroup>
+          <optgroup label="🏘 Tisaleo">
+            <option value="Tisaleo - Centro">Tisaleo - Centro</option>
+          </optgroup>
+          <optgroup label="🏘 Mocha">
+            <option value="Mocha - Centro">Mocha - Centro</option>
+          </optgroup>
+          <optgroup label="🏘 Quero">
+            <option value="Quero - Centro">Quero - Centro</option>
+          </optgroup>
+          <optgroup label="🏘 Cevallos">
+            <option value="Cevallos - Centro">Cevallos - Centro</option>
+          </optgroup>
+          <optgroup label="🏘 Santiago de Píllaro">
+            <option value="Santiago de Píllaro">Santiago de Píllaro</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn-submit" id="submit-btn" onclick="guardarDatos()" style="width:auto;padding:10px 28px;">
+        <span id="btn-text">Guardar cambios</span>
+        <div id="btn-spinner" class="spinner" style="display:none;"></div>
+      </button>
+    </div>
+  </div>
+
+  <div class="perfil-card">
+    <div class="section-title">Informacion de cuenta</div>
+    <div class="info-row">
+      <div>
+        <div class="info-label">Correo electronico</div>
+        <div class="info-value" id="info-email">—</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+        <div id="email-verif-badge"></div>
+        <button id="btn-reenviar-verif" onclick="reenviarVerificacion()"
+          style="display:none;font-size:12px;color:#1D9E75;background:none;border:1px solid #1D9E75;border-radius:8px;padding:5px 14px;cursor:pointer;font-family:inherit;font-weight:600;">
+          Reenviar correo de verificacion
+        </button>
+      </div>
+    </div>
+    <div class="info-row">
+      <div><div class="info-label">Miembro desde</div><div class="info-value" id="info-fecha">—</div></div>
+    </div>
+    <div class="info-row">
+      <div><div class="info-label">Modo Trabajador</div><div class="info-value" id="info-trabajador">—</div></div>
+    </div>
+  </div>
+
+  <div class="perfil-card">
+    <div class="section-title">Seguridad</div>
+    <div class="info-row">
+      <div><div class="info-label">Contrasena</div><div class="info-value">••••••••••</div></div>
+      <button class="btn-sm" onclick="toggleChangePass()">Cambiar contrasena</button>
+    </div>
+    <div id="change-pass-section" style="display:none;margin-top:16px;border-top:1px solid #F3F4F6;padding-top:16px;">
+      <div id="alert-pass" class="alert-box" style="display:none;margin-bottom:12px;"></div>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Contrasena actual</label>
+          <input type="password" id="pass-actual" class="form-input" placeholder="Tu contrasena actual">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nueva contrasena</label>
+          <input type="password" id="pass-nueva" class="form-input" placeholder="Minimo 8 caracteres" oninput="checkPasswordStrength(this.value)">
+          <div class="password-strength" id="pass-strength" style="display:none;">
+            <div class="strength-bars">
+              <div class="strength-bar" id="bar1"></div>
+              <div class="strength-bar" id="bar2"></div>
+              <div class="strength-bar" id="bar3"></div>
+              <div class="strength-bar" id="bar4"></div>
+            </div>
+            <span id="strength-label" style="font-size:12px;"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmar nueva contrasena</label>
+          <input type="password" id="pass-confirmar" class="form-input" placeholder="Repite la contrasena">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button class="btn-submit" style="flex:1;" id="submit-pass-btn" onclick="cambiarPassword()">
+          <span id="btn-pass-text">Actualizar contrasena</span>
+          <div id="btn-pass-spinner" class="spinner" style="display:none;"></div>
+        </button>
+        <button class="btn-sm" onclick="toggleChangePass()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+// ── Proteger ruta ─────────────────────────────────────
+const session = getSession();
+if (!session) window.location.href = 'login.html';
+
+// Función helper para los botones de carga (añadida por seguridad)
+function setLoading(isLoading) {
+  const btn = document.getElementById('submit-btn');
+  const txt = document.getElementById('btn-text');
+  const sp  = document.getElementById('btn-spinner');
+  if (!btn) return;
+  btn.disabled = isLoading;
+  txt.style.display = isLoading ? 'none' : 'inline';
+  sp.style.display = isLoading ? 'block' : 'none';
+}
+
+// ── Cargar perfil al entrar ───────────────────────────
+(async function init() {
+  // 1. Renderizado inicial rápido con los datos cacheados
+  if (session && session.usuario) {
+    renderPerfil(session.usuario);
+  }
+
+  // 2. Actualización con datos frescos del servidor
+  try {
+    const data = await Perfil.obtener();
+    renderPerfil(data.usuario);
+    // Actualizar sesión con datos frescos
+    const ses = getSession();
+    if (ses) { ses.usuario = data.usuario; setSession(ses); }
+    if (typeof refreshNavbar === 'function') refreshNavbar();
+  } catch(e) {
+    if (typeof showAlert === 'function') showAlert('Error al cargar el perfil. Verifica tu conexion.', 'error');
+  }
+})();
+
+// ── Renderizar datos del usuario ──────────────────────
+function renderPerfil(u) {
+  // Foto
+  const fc = document.getElementById('foto-circle');
+  if (u.foto_url) {
+    fc.innerHTML = `<img src="${u.foto_url}" alt="Foto de perfil">`;
+  } else {
+    const ini = ((u.nombre||'U')[0] + (u.apellido ? u.apellido[0] : '')).toUpperCase();
+    fc.textContent = ini;
+    fc.style.background = '#1D9E75';
+  }
+
+  // Encabezado principal
+  document.getElementById('perfil-nombre').textContent = `${u.nombre||''} ${u.apellido||''}`.trim() || 'Sin nombre';
+  document.getElementById('perfil-email').textContent  = u.email || '—';
+  document.getElementById('perfil-zona').textContent   = u.zona ? '📍 ' + u.zona : '';
+
+  // NOMBRES EN EL DROPDOWN (agregado)
+  const dropName = document.getElementById('drop-name');
+  if (dropName) dropName.textContent = `${u.nombre||''} ${u.apellido||''}`.trim() || 'Usuario';
+  const dropEmail = document.getElementById('drop-email');
+  if (dropEmail) dropEmail.textContent = u.email || '';
+
+  // ✨ Validación unificada de estado de verificación (protege por si la API retorna algo distinto)
+  const esVerificado = u.verificado || u.email_verificado;
+
+  // Badge verificacion
+  document.getElementById('perfil-badge').innerHTML = esVerificado
+    ? '<span class="badge-verif">Cuenta verificada</span>'
+    : '<span class="badge-noverif">Sin verificar</span>';
+
+  // Formulario edicion
+  document.getElementById('p-nombre').value   = u.nombre   || '';
+  document.getElementById('p-apellido').value = u.apellido || '';
+  document.getElementById('p-telefono').value = u.telefono || '';
+  
+  // Ahora establece el select
+  const zonaInput = document.getElementById('p-zona');
+  if (u.zona) {
+    // Intenta buscar si la zona guardada coincide con las opciones del dropdown
+    let optionExists = Array.from(zonaInput.options).some(opt => opt.value === u.zona);
+    if(optionExists) {
+        zonaInput.value = u.zona;
+    } else {
+        zonaInput.value = ""; // O podrías añadir una opción dinámica si no existe
+    }
+  } else {
+    zonaInput.value = "";
+  }
+
+  // Info cuenta
+  document.getElementById('info-email').textContent = u.email || '—';
+  document.getElementById('info-fecha').textContent = u.createdat
+    ? new Date(u.createdat).toLocaleDateString('es', { year:'numeric', month:'long', day:'numeric' })
+    : '—';
+  document.getElementById('info-trabajador').textContent = u.es_trabajador ? 'Activo' : 'No activado';
+
+  // Badge verificacion en info cuenta
+  document.getElementById('email-verif-badge').innerHTML = esVerificado
+    ? '<span class="badge-verif">Verificado</span>'
+    : '<span class="badge-noverif">No verificado</span>';
+
+  // Boton reenviar (solo si no verificado)
+  const btnReenviar = document.getElementById('btn-reenviar-verif');
+  if (btnReenviar) btnReenviar.style.display = esVerificado ? 'none' : 'inline-block';
+}
+
+// ── Subir foto ────────────────────────────────────────
+async function subirFoto(input) {
+  if (!input.files.length) return;
+  const file = input.files[0];
+  if (file.size > 5*1024*1024) { showAlert('La imagen supera 5MB.', 'error'); return; }
+
+  // Preview local inmediato
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('foto-circle').innerHTML = `<img src="${e.target.result}" alt="preview">`;
+  };
+  reader.readAsDataURL(file);
+
+  showAlert('Subiendo foto...', 'info');
+  const fd = new FormData();
+  fd.append('foto', file);
+  try {
+    const data = await Perfil.subirFoto(fd);
+    // Actualizar sesion
+    const ses = getSession();
+    if (ses?.usuario) { ses.usuario.foto_url = data.foto_url; setSession(ses); }
+    if (typeof refreshNavbar === 'function') refreshNavbar();
+    showAlert('Foto actualizada correctamente', 'success');
+    if (data.usuario) renderPerfil(data.usuario);
+  } catch(e) {
+    showAlert(e.message || 'Error al subir la foto. Verifica Cloudinary en el .env', 'error');
+  }
+  input.value = '';
+}
+
+// ── Guardar datos personales ──────────────────────────
+async function guardarDatos() {
+  const nombre   = document.getElementById('p-nombre').value.trim();
+  const apellido = document.getElementById('p-apellido').value.trim();
+  const telefono = document.getElementById('p-telefono').value.trim();
+  const zona     = document.getElementById('p-zona').value;
+  
+  if (!nombre) { showAlert('El nombre es obligatorio.', 'error', 'alert-datos'); return; }
+
+  setLoading(true);
+  try {
+    const data = await Perfil.actualizar({ nombre, apellido, telefono, zona });
+    const ses = getSession();
+    if (ses?.usuario) { Object.assign(ses.usuario, data.usuario); setSession(ses); }
+    if (typeof refreshNavbar === 'function') refreshNavbar();
+    setLoading(false);
+    showAlert('Perfil actualizado correctamente', 'success', 'alert-datos');
+    renderPerfil(data.usuario);
+  } catch(e) {
+    setLoading(false);
+    showAlert(e.message, 'error', 'alert-datos');
+  }
+}
+
+// ── Toggle seccion cambiar contrasena ─────────────────
+function toggleChangePass() {
+  const s = document.getElementById('change-pass-section');
+  s.style.display = s.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Cambiar contrasena ────────────────────────────────
+async function cambiarPassword() {
+  const passwordActual    = document.getElementById('pass-actual').value;
+  const nuevaPassword     = document.getElementById('pass-nueva').value;
+  const confirmarPassword = document.getElementById('pass-confirmar').value;
+
+  if (!passwordActual || !nuevaPassword)   { showAlert('Completa todos los campos.',        'error', 'alert-pass'); return; }
+  if (nuevaPassword.length < 8)            { showAlert('Minimo 8 caracteres.',              'error', 'alert-pass'); return; }
+  if (nuevaPassword !== confirmarPassword) { showAlert('Las contrasenas no coinciden.',     'error', 'alert-pass'); return; }
+
+  const btn = document.getElementById('submit-pass-btn');
+  const txt = document.getElementById('btn-pass-text');
+  const sp  = document.getElementById('btn-pass-spinner');
+  btn.disabled=true; txt.style.display='none'; sp.style.display='block';
+  try {
+    await Auth.changePassword({ passwordActual, nuevaPassword, confirmarPassword });
+    btn.disabled=false; txt.style.display='inline'; sp.style.display='none';
+    showAlert('Contrasena actualizada correctamente', 'success', 'alert-pass');
+    document.getElementById('pass-actual').value    = '';
+    document.getElementById('pass-nueva').value     = '';
+    document.getElementById('pass-confirmar').value = '';
+  } catch(e) {
+    btn.disabled=false; txt.style.display='inline'; sp.style.display='none';
+    showAlert(e.message, 'error', 'alert-pass');
+  }
+}
+
+// ── Reenviar verificacion ─────────────────────────────
+async function reenviarVerificacion() {
+  const ses   = getSession();
+  const email = ses?.usuario?.email;
+  if (!email) return;
+
+  const btn = document.getElementById('btn-reenviar-verif');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+  try {
+    const data = await Auth.resendVerification(email);
+    showAlert(data.mensaje || 'Correo de verificacion enviado. Revisa tu bandeja.', 'success');
+    if (btn) btn.textContent = 'Correo enviado';
+  } catch(e) {
+    showAlert(e.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Reenviar correo de verificacion'; }
+  }
+}
+</script>
+
+<script>
+const _session = getSession();
+const _token   = _session?.token;
+const _API     = 'http://localhost:3000/api';
+let   _notifs  = [];
+
+async function cargarNotificaciones() {
+  if (!_token) return;
+  try {
+    const r    = await fetch(`${_API}/notificaciones`, { headers: { 'Authorization': `Bearer ${_token}` } });
+    const data = await r.json();
+    _notifs = data.notificaciones || [];
+    renderNotificaciones();
+  } catch(e) {}
+}
+
+function renderNotificaciones() {
+  const noLeidas = _notifs.filter(n => !n.leida).length;
+  const badge    = document.getElementById('notif-badge');
+  if (badge) { badge.textContent = noLeidas > 9 ? '9+' : noLeidas; badge.style.display = noLeidas > 0 ? 'block' : 'none'; }
+  const body = document.getElementById('notif-body');
+  if (!body) return;
+  if (!_notifs.length) { body.innerHTML = '<div style="padding:32px 16px;text-align:center;color:#9CA3AF;font-size:13px;">No tienes notificaciones.</div>'; return; }
+  const icons = { advertencia:'⚠️', verificacion:'🔔', mensaje:'💬', default:'🔔' };
+  body.innerHTML = _notifs.slice(0, 10).map(n => `
+    <div onclick="marcarLeida(${n.id})" style="display:flex;gap:12px;padding:13px 16px;border-bottom:1px solid #F3F4F6;cursor:pointer;background:${n.leida ? '#fff' : '#F0FDF4'};${!n.leida ? 'border-left:3px solid #1D9E75;' : ''}">
+      <span style="font-size:20px;">${icons[n.tipo] || icons.default}</span>
+      <div>
+        <p style="margin:0 0 3px;font-size:13px;color:#374151;"><strong>${n.titulo}</strong><br>${n.mensaje||''}</p>
+        <span style="font-size:11px;color:#9CA3AF;">${tiempoRelativo(n.createdat)}</span>
+      </div>
+    </div>`).join('');
+}
+
+function tiempoRelativo(fecha) {
+  const diff = Date.now() - new Date(fecha).getTime();
+  const min  = Math.floor(diff / 60000);
+  if (min < 1)  return 'Ahora mismo';
+  if (min < 60) return `Hace ${min} min`;
+  if (min < 1440) return `Hace ${Math.floor(min/60)} h`;
+  return `Hace ${Math.floor(min/1440)} día(s)`;
+}
+
+async function marcarLeida(id) {
+  await fetch(`${_API}/notificaciones/${id}/leer`, { method:'PUT', headers:{ 'Authorization':`Bearer ${_token}` } });
+  const n = _notifs.find(n => n.id === id);
+  if (n) n.leida = true;
+  renderNotificaciones();
+}
+
+async function marcarTodasLeidas(event) {
+  if (event) event.stopPropagation();
+  await fetch(`${_API}/notificaciones/leer-todas`, { method:'PUT', headers:{ 'Authorization':`Bearer ${_token}` } });
+  _notifs.forEach(n => n.leida = true);
+  renderNotificaciones();
+}
+
+function toggleNotificaciones(event) {
+  if (event) event.stopPropagation();
+  const n = document.getElementById('notifDropdown');
+  const abriendo = n.style.display === 'none';
+  n.style.display = abriendo ? 'block' : 'none';
+  if (abriendo) cargarNotificaciones();
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#notif-btn'))
+    document.getElementById('notifDropdown').style.display = 'none';
+});
+
+if (_session) { cargarNotificaciones(); setInterval(cargarNotificaciones, 30000); }
+</script>
+
+</body>
+</html>

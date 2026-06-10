@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar correo — OficiosYA</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <style>
+    body { background:#F3F4F6; }
+    .verify-wrap  { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .verify-box   { background:#fff; border-radius:16px; border:1px solid #E5E7EB; padding:40px 32px; max-width:420px; width:100%; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,.06); }
+    .verify-icon  { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+    .icon-ok      { background:#D1FAE5; }
+    .icon-warn    { background:#FEF3C7; }
+    .icon-error   { background:#FEE2E2; }
+    .icon-loading { background:#F3F4F6; }
+    .verify-title { font-size:22px; font-weight:800; color:#111827; margin-bottom:8px; }
+    .verify-sub   { font-size:14px; color:#6B7280; margin-bottom:24px; line-height:1.6; }
+    .spinner-big  { width:48px; height:48px; border:4px solid #E5E7EB; border-top-color:#1D9E75; border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 20px; }
+    .btn-primary  { display:inline-flex; align-items:center; gap:8px; background:#1D9E75; color:#fff; padding:12px 24px; border-radius:10px; font-weight:700; font-size:14px; text-decoration:none; border:none; cursor:pointer; font-family:inherit; transition:background .15s; margin-top:4px; }
+    .btn-primary:hover { background:#0F6E56; }
+    .btn-outline  { display:inline-flex; align-items:center; gap:8px; background:#fff; color:#374151; padding:11px 22px; border-radius:10px; font-weight:600; font-size:14px; text-decoration:none; border:1.5px solid #E5E7EB; cursor:pointer; font-family:inherit; transition:all .15s; margin-top:8px; }
+    .btn-outline:hover { border-color:#1D9E75; color:#1D9E75; }
+    .btn-group    { display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .reintento-ok { margin-top:14px; padding:10px 16px; background:#D1FAE5; border-radius:8px; font-size:13px; color:#065F46; font-weight:600; display:none; }
+    .logo         { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:28px; text-decoration:none; }
+    .logo-icon    { width:36px; height:36px; background:#1D9E75; border-radius:9px; display:flex; align-items:center; justify-content:center; }
+    .logo-text    { font-size:18px; font-weight:800; color:#111827; }
+    .logo-ya      { color:#1D9E75; }
+  </style>
+</head>
+<body>
+<div class="verify-wrap">
+  <div class="verify-box">
+
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" fill="white"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <circle cx="17" cy="6" r="3" fill="#C8860A"/>
+        </svg>
+      </div>
+      <span class="logo-text">Oficios<span class="logo-ya">YA</span></span>
+    </a>
+
+    <!-- CARGANDO -->
+    <div id="state-loading">
+      <div class="spinner-big"></div>
+      <div class="verify-title">Verificando tu correo...</div>
+      <div class="verify-sub">Por favor espera un momento.</div>
+    </div>
+
+    <!-- VERIFICADO OK -->
+    <div id="state-ok" style="display:none;">
+      <div class="verify-icon icon-ok">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="verify-title">Correo verificado</div>
+      <div class="verify-sub" id="ok-msg">Tu cuenta ha sido verificada correctamente. Ya puedes usar todas las funciones de OficiosYA.</div>
+      <div class="btn-group">
+        <a href="dashboard.html" class="btn-primary">Ir a mi panel</a>
+      </div>
+    </div>
+
+    <!-- YA ESTABA VERIFICADO -->
+    <div id="state-ya" style="display:none;">
+      <div class="verify-icon icon-ok">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="verify-title">Ya verificado</div>
+      <div class="verify-sub">Tu correo ya fue verificado anteriormente. Puedes iniciar sesión normalmente.</div>
+      <div class="btn-group">
+        <a href="dashboard.html" class="btn-primary">Ir a mi panel</a>
+        <a href="login.html" class="btn-outline">Iniciar sesión</a>
+      </div>
+    </div>
+
+    <!-- ERROR / ENLACE EXPIRADO -->
+    <div id="state-error" style="display:none;">
+      <div class="verify-icon icon-warn">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="verify-title">Enlace inválido o expirado</div>
+      <div class="verify-sub" id="err-msg">El enlace de verificación ha expirado o ya fue usado. Puedes solicitar uno nuevo.</div>
+      <div class="btn-group">
+        <button onclick="reenviarVerificacion()" class="btn-primary">Reenviar correo de verificación</button>
+        <a href="registro.html" class="btn-outline">Crear cuenta nueva</a>
+        <a href="login.html" class="btn-outline">Iniciar sesión</a>
+      </div>
+      <div class="reintento-ok" id="reintento-ok">
+        Correo reenviado. Revisa tu bandeja de entrada.
+      </div>
+    </div>
+
+    <!-- ENLACE INCOMPLETO (sin params) -->
+    <div id="state-noparams" style="display:none;">
+      <div class="verify-icon icon-error">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </div>
+      <div class="verify-title">Enlace incompleto</div>
+      <div class="verify-sub">Este enlace no es válido. Usa el enlace completo que llegó a tu correo.</div>
+      <div class="btn-group">
+        <a href="login.html" class="btn-primary">Ir al login</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+function show(id) {
+  ['state-loading','state-ok','state-ya','state-error','state-noparams'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? 'block' : 'none';
+  });
+}
+
+(async function() {
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('token');
+  const id     = params.get('id');
+
+  if (!token || !id) { show('state-noparams'); return; }
+
+  try {
+    const data = await Auth.verifyEmail(token, id);
+    const msg  = data.mensaje || '';
+    if (msg.includes('ya fue verificado')) {
+      show('state-ya');
+    } else {
+      document.getElementById('ok-msg').textContent = msg || 'Tu cuenta ha sido verificada correctamente.';
+      show('state-ok');
+      // Marcar en sesión activa si la hay
+      const s = getSession();
+      if (s && s.usuario) {
+        s.usuario.email_verificado = true;
+        localStorage.setItem('oya_session', JSON.stringify(s));
+      }
+    }
+  } catch(e) {
+    if (e.message?.includes('ya fue verificado')) {
+      show('state-ya');
+    } else {
+      document.getElementById('err-msg').textContent = e.message || 'El enlace es inválido o ha expirado.';
+      show('state-error');
+    }
+  }
+})();
+
+async function reenviarVerificacion() {
+  const btn = document.querySelector('#state-error .btn-primary');
+
+  // Intentar obtener email de la sesión activa
+  const s     = getSession();
+  const email = s?.usuario?.email;
+
+  let correo = email;
+  if (!correo) {
+    correo = prompt('Ingresa tu correo electrónico para reenviar la verificación:');
+    if (!correo || !correo.includes('@')) return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+  try {
+    await Auth.forgotPassword(correo); // el backend responde igual sin revelar si existe
+    document.getElementById('reintento-ok').style.display = 'block';
+    if (btn) { btn.textContent = 'Correo enviado'; }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Reenviar correo de verificación'; }
+    alert('Error al reenviar: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>

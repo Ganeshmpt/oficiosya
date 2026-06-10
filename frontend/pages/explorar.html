@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorar Oficios — OficiosYA</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    .explorar-layout{display:grid;grid-template-columns:220px 1fr;max-width:1200px;margin:0 auto;min-height:calc(100vh - 60px);}
+    .exp-sidebar{background:#fff;padding:20px;border-right:1px solid #E5E7EB;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    .sidebar-hdr h3{font-size:15px;font-weight:700;margin:0;}
+    .clear-btn{font-size:12px;color:#1D9E75;background:none;border:none;cursor:pointer;font-weight:600;}
+    .filter-sec{margin-bottom:20px;}
+    .filter-lbl{font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+    .filter-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;margin-bottom:6px;cursor:pointer;}
+    .filter-item input[type=radio]{accent-color:#1D9E75;}
+    .filter-select{width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff;color:#111827;margin-bottom:6px;}
+    .filter-select:focus{border-color:#1D9E75;}
+    .exp-main{padding:24px;min-width:0;}
+    .exp-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:14px;}
+    .exp-title{font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px;}
+    .exp-sub{font-size:13px;color:#6B7280;}
+    .exp-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .search-bar{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #E5E7EB;border-radius:8px;padding:8px 14px;min-width:220px;}
+    .search-bar input{border:none;outline:none;font-size:13px;font-family:inherit;color:#111827;background:transparent;width:100%;}
+
+    /* Botón filtros móvil */
+    .btn-filtros-movil { display:none; align-items:center; gap:6px; padding:8px 14px; background:#fff; border:1.5px solid #E5E7EB; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; color:#374151; }
+    .btn-filtros-movil:hover { border-color:#1D9E75; color:#1D9E75; }
+
+    /* Toggle vista */
+    .vista-toggle{display:flex;background:#F3F4F6;border-radius:8px;padding:3px;gap:2px;}
+    .vista-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:transparent;color:#6B7280;transition:all .15s;}
+    .vista-btn.active{background:#fff;color:#1D9E75;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+    .vista-btn svg{width:14px;height:14px;}
+
+    /* Grid */
+    .workers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+    .wcard{background:#fff;border-radius:12px;border:1px solid #E5E7EB;padding:18px;transition:all .2s;display:flex;flex-direction:column;gap:8px;}
+    .wcard:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1);border-color:#1D9E75;}
+    .wc-avatar{width:48px;height:48px;border-radius:50%;background:#E5E7EB;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#6B7280;overflow:hidden;flex-shrink:0;}
+    .wc-avatar img{width:100%;height:100%;object-fit:cover;}
+    .wc-header{display:flex;align-items:center;gap:12px;}
+    .wc-info{flex:1;min-width:0;}
+    .wc-nombre{font-size:14px;font-weight:700;color:#111827;}
+    .wc-titulo{font-size:12px;color:#1D9E75;font-weight:600;}
+    .wc-desc{font-size:13px;color:#6B7280;line-height:1.4;}
+    .wc-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#6B7280;margin-top:auto;}
+    .wc-meta span{display:flex;align-items:center;gap:3px;}
+    .wc-actions{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;}
+    .btn{border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+    .btn-primary{background:#1D9E75;color:#fff;}.btn-primary:hover{background:#0F6E56;}
+    .btn-outline{background:none;border:1.5px solid #E5E7EB;color:#374151;}.btn-outline:hover{border-color:#1D9E75;color:#1D9E75;}
+    .btn-chat{background:#EDE9FE;color:#4C1D95;border:none;}.btn-chat:hover{background:#DDD6FE;}
+    .no-results{grid-column:1/-1;text-align:center;padding:48px;color:#9CA3AF;font-size:14px;}
+    .loading{grid-column:1/-1;text-align:center;padding:48px;color:#9CA3AF;font-size:14px;}
+    .badge-disp{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:#D1FAE5;color:#065F46;}
+    .badge-ocup{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:#FEE2E2;color:#991B1B;}
+    .badge-verif{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:#DBEAFE;color:#1E40AF;margin-left:4px;}
+    .rating-mini{font-size:12px;color:#F59E0B;font-weight:600;}
+
+    /* Mapa */
+    #vista-mapa{display:none;}
+    #mapa-explorar{height:calc(100vh - 200px);min-height:500px;border-radius:12px;border:1px solid #E5E7EB;z-index:1;}
+    .mapa-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:#6B7280;align-items:center;}
+    .mapa-legend span{display:flex;align-items:center;gap:5px;}
+    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;}
+    .dot-disp{background:#1D9E75;}
+    .dot-ocup{background:#EF4444;}
+
+    /* Popup Leaflet */
+    .popup-card{font-family:'Plus Jakarta Sans',sans-serif;min-width:180px;max-width:220px;}
+    .popup-card h4{font-size:13px;font-weight:700;margin:0 0 3px;color:#111827;}
+    .popup-card .pc-titulo{font-size:11px;color:#1D9E75;font-weight:600;margin-bottom:5px;}
+    .popup-card .pc-meta{font-size:11px;color:#6B7280;margin-bottom:8px;line-height:1.5;}
+    .popup-card .pc-btn{display:block;text-align:center;background:#1D9E75;color:#fff;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;text-decoration:none;font-family:inherit;}
+    .popup-card .pc-btn:hover{background:#0F6E56;}
+    .popup-card .pc-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;display:inline-block;margin-bottom:5px;}
+
+    /* Toast */
+    .toast{position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:10px;font-weight:600;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.15);animation:toastIn .3s ease;pointer-events:none;}
+    .toast-success{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;}
+    .toast-error{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;}
+    @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+    /* Responsive */
+    @media(max-width:860px){
+      .explorar-layout{grid-template-columns:1fr;}
+      .btn-filtros-movil { display:flex; }
+      .exp-sidebar {
+        display:block;
+        position:fixed; top:0; left:-280px; width:260px; height:100vh;
+        z-index:300; transition:left .25s ease; box-shadow:4px 0 20px rgba(0,0,0,.15);
+      }
+      .exp-sidebar.abierto { left:0; }
+      #mapa-explorar{height:60vh;min-height:360px;}
+    }
+    @media(max-width:640px){
+      .exp-header{flex-direction:column;align-items:stretch;}
+      .exp-controls{flex-direction:column;align-items:stretch;}
+      .search-bar{min-width:unset;}
+      .vista-toggle{align-self:flex-end;}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" opacity=".9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="17" cy="6" r="3" fill="#C8860A"/></svg></div>
+      <span class="logo-text">Oficios<span class="logo-ya">YA</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="dashboard.html"   class="nav-link private-link" style="display:none;">Mi Panel</a>
+      <a href="explorar.html"    class="nav-link active">Explorar</a>
+      <a href="solicitudes.html" class="nav-link">Solicitudes</a>
+      <a href="chat.html"        class="nav-link nav-chat-link private-link" style="display:none;">
+        Chat<span class="nav-chat-badge" id="nav-chat-badge">0</span>
+      </a>
+      <a href="perfil.html" class="nav-link private-link" style="display:none;">Mi Perfil</a>
+    </div>
+    <div class="nav-actions" id="nav-guest">
+      <a href="login.html"    class="btn btn-outline">Iniciar sesión</a>
+      <a href="registro.html" class="btn btn-primary">Registrarse</a>
+    </div>
+    <div class="nav-actions nav-user-area" id="nav-auth" style="display:none;">
+      <!-- Campana -->
+      <div class="nav-notification" id="notif-btn" onclick="toggleNotificaciones(event)" style="position:relative;margin-right:12px;cursor:pointer;display:flex;align-items:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span id="notif-badge" style="display:none;position:absolute;top:-6px;right:-6px;background:#EF4444;color:#fff;font-size:10px;font-weight:800;padding:2px 5px;border-radius:999px;border:2px solid #1D9E75;min-width:18px;text-align:center;">0</span>
+        <div id="notifDropdown" style="display:none;position:absolute;top:45px;right:-10px;width:320px;background:#fff;border:1px solid #E5E7EB;border-radius:12px;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);z-index:1000;color:#111827;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-weight:700;border-bottom:1px solid #E5E7EB;font-size:14px;">
+            <span>Notificaciones</span>
+            <button onclick="marcarTodasLeidas(event)" style="font-size:11px;color:#1D9E75;background:none;border:none;cursor:pointer;font-weight:600;font-family:inherit;">Marcar todas como leídas</button>
+          </div>
+          <div id="notif-body" style="max-height:320px;overflow-y:auto;">
+            <div style="padding:32px 16px;text-align:center;color:#9CA3AF;font-size:13px;">Cargando...</div>
+          </div>
+        </div>
+      </div>
+      <!-- Avatar -->
+      <div class="nav-avatar-btn" onclick="toggleUserMenu()">
+        <div class="nav-avatar" id="nav-avatar">U</div>
+        <span id="nav-username">Usuario</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="user-dropdown" id="userDropdown" style="display:none;">
+        <div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;">
+          <div style="font-weight:600;font-size:14px;" id="drop-name">—</div>
+          <div style="font-size:12px;color:#6B7280;" id="drop-email">—</div>
+        </div>
+        <a href="dashboard.html"   class="dropdown-item">Mi panel</a>
+        <a href="perfil.html"      class="dropdown-item">Mi perfil</a>
+        <a href="solicitudes.html" class="dropdown-item">Solicitudes</a>
+        <a href="chat.html"        class="dropdown-item">💬 Mis mensajes</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item dropdown-logout" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+    <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile-menu" id="mobileMenu">
+    <a href="../index.html"    class="nav-mobile-link">🏠 Inicio</a>
+    <a href="explorar.html"    class="nav-mobile-link">🔍 Explorar</a>
+    <a href="solicitudes.html" class="nav-mobile-link">📋 Solicitudes</a>
+    <div class="nav-mobile-divider"></div>
+    <div id="mob-guest-actions" class="nav-mobile-actions">
+      <a href="login.html"    class="nav-mobile-btn-out">Iniciar sesión</a>
+      <a href="registro.html" class="nav-mobile-btn-pri">Registrarse</a>
+    </div>
+    <div id="mob-auth-actions" style="display:none;">
+      <a href="dashboard.html" class="nav-mobile-link">Mi panel</a>
+      <a href="perfil.html"    class="nav-mobile-link">Mi perfil</a>
+      <button onclick="logout()" class="nav-mobile-link" style="background:none;border:none;color:#EF4444;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;padding:12px 8px;width:100%;">Cerrar sesión</button>
+    </div>
+  </div>
+</nav>
+
+<div class="explorar-layout">
+  <!-- Sidebar filtros -->
+  <aside class="exp-sidebar">
+    <div class="sidebar-hdr">
+      <h3>Filtros</h3>
+      <button class="clear-btn" onclick="clearFilters()">Limpiar</button>
+    </div>
+
+    <div class="filter-sec">
+      <div class="filter-lbl">Categoría</div>
+      <label class="filter-item"><input type="radio" name="cat" value="todas" checked onchange="aplicarFiltros()"> Todas</label>
+      <label class="filter-item"><input type="radio" name="cat" value="Albañilería"  onchange="aplicarFiltros()"> Albañilería</label>
+      <label class="filter-item"><input type="radio" name="cat" value="Carpintería"  onchange="aplicarFiltros()"> Carpintería</label>
+      <label class="filter-item"><input type="radio" name="cat" value="Cerrajería"   onchange="aplicarFiltros()"> Cerrajería</label>
+      <label class="filter-item"><input type="radio" name="cat" value="Electricidad" onchange="aplicarFiltros()"> Electricidad</label>
+      <label class="filter-item"><input type="radio" name="cat" value="Jardinería"   onchange="aplicarFiltros()"> Jardinería</label>
+      <label class="filter-item"><input type="radio" name="cat" value="Pintura"      onchange="aplicarFiltros()"> Pintura</label>
+      <label class="filter-item"><input type="radio" name="cat" value="Plomería"     onchange="aplicarFiltros()"> Plomería</label>
+    </div>
+
+    <div class="filter-sec">
+      <div class="filter-lbl">Disponibilidad</div>
+      <label class="filter-item"><input type="radio" name="disp" value="todas"       checked onchange="aplicarFiltros()"> Todas</label>
+      <label class="filter-item"><input type="radio" name="disp" value="disponible"          onchange="aplicarFiltros()"> Disponibles</label>
+      <label class="filter-item"><input type="radio" name="disp" value="ocupado"             onchange="aplicarFiltros()"> Ocupados</label>
+    </div>
+
+    <div class="filter-sec">
+      <div class="filter-lbl">Zona / Sector</div>
+      <select id="filter-zona" class="filter-select" onchange="aplicarFiltros()">
+        <option value="todas">— Todas las zonas —</option>
+        <optgroup label="🏙 Ambato">
+          <option value="Ambato - Centro">Ambato - Centro</option>
+          <option value="Ambato - La Merced">Ambato - La Merced</option>
+          <option value="Ambato - Ficoa">Ambato - Ficoa</option>
+          <option value="Ambato - Atocha">Ambato - Atocha</option>
+          <option value="Ambato - Huachi">Ambato - Huachi</option>
+          <option value="Ambato - Ingahurco">Ambato - Ingahurco</option>
+          <option value="Ambato - Miraflores">Ambato - Miraflores</option>
+          <option value="Ambato - Cashapamba">Ambato - Cashapamba</option>
+          <option value="Ambato - El Recreo">Ambato - El Recreo</option>
+          <option value="Ambato - Izamba">Ambato - Izamba</option>
+          <option value="Ambato - Picaihua">Ambato - Picaihua</option>
+          <option value="Ambato - Quisapincha">Ambato - Quisapincha</option>
+          <option value="Ambato - Juan Benigno Vela">Ambato - Juan Benigno Vela</option>
+          <option value="Ambato - Pishilata">Ambato - Pishilata</option>
+        </optgroup>
+        <optgroup label="🏘 Baños de Agua Santa">
+          <option value="Baños - Centro">Baños - Centro</option>
+          <option value="Baños - El Salado">Baños - El Salado</option>
+          <option value="Baños - Lligua">Baños - Lligua</option>
+          <option value="Baños - Ulba">Baños - Ulba</option>
+        </optgroup>
+        <optgroup label="🏘 Pelileo">
+          <option value="Pelileo - Centro">Pelileo - Centro</option>
+          <option value="Pelileo - Salasaca">Pelileo - Salasaca</option>
+          <option value="Pelileo - Benítez">Pelileo - Benítez</option>
+          <option value="Pelileo - García Moreno">Pelileo - García Moreno</option>
+        </optgroup>
+        <optgroup label="🏘 Píllaro">
+          <option value="Píllaro - Centro">Píllaro - Centro</option>
+          <option value="Píllaro - San Andrés">Píllaro - San Andrés</option>
+          <option value="Píllaro - Marcos Espinel">Píllaro - Marcos Espinel</option>
+        </optgroup>
+        <optgroup label="🏘 Patate">
+          <option value="Patate - Centro">Patate - Centro</option>
+          <option value="Patate - Los Andes">Patate - Los Andes</option>
+        </optgroup>
+        <optgroup label="🏘 Tisaleo"><option value="Tisaleo - Centro">Tisaleo - Centro</option></optgroup>
+        <optgroup label="🏘 Mocha"><option value="Mocha - Centro">Mocha - Centro</option></optgroup>
+        <optgroup label="🏘 Quero"><option value="Quero - Centro">Quero - Centro</option></optgroup>
+        <optgroup label="🏘 Cevallos"><option value="Cevallos - Centro">Cevallos - Centro</option></optgroup>
+        <optgroup label="🏘 Santiago de Píllaro"><option value="Santiago de Píllaro">Santiago de Píllaro</option></optgroup>
+      </select>
+    </div>
+
+    <div class="filter-sec">
+      <div class="filter-lbl">Calificación mínima</div>
+      <label class="filter-item"><input type="radio" name="rating" value="0" checked onchange="aplicarFiltros()"> Cualquiera</label>
+      <label class="filter-item"><input type="radio" name="rating" value="4"         onchange="aplicarFiltros()"> ⭐ 4+ estrellas</label>
+      <label class="filter-item"><input type="radio" name="rating" value="3"         onchange="aplicarFiltros()"> ⭐ 3+ estrellas</label>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="exp-main">
+    <div class="exp-header">
+      <div>
+        <div class="exp-title">Explorar profesionales</div>
+        <div class="exp-sub" id="result-count">Cargando...</div>
+      </div>
+      <div class="exp-controls">
+        <div class="search-bar">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Buscar por nombre o especialidad..." id="search-input" oninput="aplicarFiltros()">
+        </div>
+        
+        <!-- Botón filtros móvil -->
+        <button class="btn-filtros-movil" id="btn-filtros" onclick="toggleFiltrosMovil()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          Filtros
+        </button>
+
+        <!-- Toggle vista -->
+        <div class="vista-toggle">
+          <button class="vista-btn active" id="btn-vista-grid" onclick="cambiarVista('grid')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Cuadrícula
+          </button>
+          <button class="vista-btn" id="btn-vista-mapa" onclick="cambiarVista('mapa')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            Mapa
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista cuadrícula -->
+    <div id="vista-grid">
+      <div class="workers-grid" id="workers-grid">
+        <div class="loading">Cargando profesionales...</div>
+      </div>
+    </div>
+
+    <!-- Vista mapa -->
+    <div id="vista-mapa">
+      <div id="mapa-explorar"></div>
+      <div class="mapa-legend">
+        <span><span class="dot dot-disp"></span> Disponible</span>
+        <span><span class="dot dot-ocup"></span> Ocupado</span>
+        <span style="margin-left:auto;font-size:11px;color:#D1D5DB;">Mapa aproximado por zona · © OpenStreetMap</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal reporte -->
+<div class="modal" id="modalReporte" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:500;padding:16px;" onclick="if(event.target===this)document.getElementById('modalReporte').style.display='none'">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:460px;position:relative;">
+    <button onclick="document.getElementById('modalReporte').style.display='none'" style="position:absolute;top:12px;right:12px;width:26px;height:26px;background:#F3F4F6;border:none;border-radius:50%;cursor:pointer;">✕</button>
+    <h3 style="margin-top:0;">Reportar trabajador</h3>
+    <p id="rep-subtitulo" style="font-size:13px;color:#6B7280;margin-bottom:14px;"></p>
+    <div id="rep-alert" style="display:none;margin-bottom:12px;padding:10px;background:#FEE2E2;border-radius:8px;font-size:13px;color:#991B1B;"></div>
+    <div style="margin-bottom:12px;">
+      <select id="rep-motivo" style="width:100%;padding:10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:13px;">
+        <option value="">Selecciona un motivo *</option>
+        <option value="Estafa o fraude">Estafa o fraude</option>
+        <option value="Comportamiento inapropiado">Comportamiento inapropiado</option>
+        <option value="Trabajo de mala calidad">Trabajo de mala calidad</option>
+        <option value="No se presentó">No se presentó</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <textarea id="rep-desc" style="width:100%;padding:10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;" rows="3" placeholder="Descripción adicional (opcional)..."></textarea>
+    </div>
+    <button onclick="enviarReporteExplorar()" style="width:100%;padding:11px;background:#EF4444;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;">Enviar Reporte</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/api.js"></script>
+<script>
+// ─────────────────────────────────────────────────────
+// Estado global
+// ─────────────────────────────────────────────────────
+let todosTrabajadores = [];
+let trabajadoresFiltrados = [];
+const session = getSession();
+const usuarioActual = session?.usuario || null;
+
+// Vista actual ('grid' | 'mapa')
+let vistaActual = 'grid';
+
+// Mapa Leaflet
+let mapaInst = null;
+let marcadores = [];
+
+// Cache geocoding (zona → coords)
+const geoCache = {};
+
+// ─────────────────────────────────────────────────────
+// Toast
+// ─────────────────────────────────────────────────────
+function mostrarToast(msg, tipo = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${tipo}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ─────────────────────────────────────────────────────
+// Navbar
+// ─────────────────────────────────────────────────────
+function toggleUserMenu() {
+  const d = document.getElementById('userDropdown');
+  d.style.display = d.style.display === 'none' ? 'flex' : 'none';
+}
+function toggleMobileMenu() {
+  const m = document.getElementById('mobileMenu');
+  const h = document.getElementById('hamburger');
+  const open = m.classList.toggle('open');
+  h.classList.toggle('open', open);
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.nav-user-area'))
+    document.getElementById('userDropdown').style.display = 'none';
+  if (!e.target.closest('.navbar')) {
+    document.getElementById('mobileMenu')?.classList.remove('open');
+    document.getElementById('hamburger')?.classList.remove('open');
+  }
+  if (!e.target.closest('#notif-btn'))
+    document.getElementById('notifDropdown').style.display = 'none';
+});
+
+// ─────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────
+(async function init() {
+  if (session) {
+    document.getElementById('nav-guest').style.display  = 'none';
+    document.getElementById('nav-auth').style.display   = 'flex';
+    document.querySelectorAll('.private-link').forEach(l => l.style.display = '');
+    document.getElementById('mob-guest-actions').style.display = 'none';
+    document.getElementById('mob-auth-actions').style.display  = 'block';
+
+    const u  = session.usuario || {};
+    const av = document.getElementById('nav-avatar');
+    if (u.foto_url) {
+      av.style.backgroundImage = `url(${u.foto_url})`;
+      av.style.backgroundSize  = 'cover';
+      av.style.backgroundPosition = 'center';
+      av.textContent = '';
+    } else {
+      av.textContent = ((u.nombre||'U')[0] + (u.apellido ? u.apellido[0] : '')).toUpperCase();
+    }
+    document.getElementById('nav-username').textContent = u.nombre || 'Usuario';
+    document.getElementById('drop-name').textContent    = `${u.nombre||''} ${u.apellido||''}`.trim();
+    document.getElementById('drop-email').textContent   = u.email || '';
+  }
+
+  await cargarTrabajadores();
+
+  // Leer categoría desde URL params (viene del index)
+  const paramCat = new URLSearchParams(window.location.search).get('categoria');
+  if (paramCat) {
+    document.querySelectorAll('input[name="cat"]').forEach(r => {
+      if (r.value.toLowerCase() === paramCat.toLowerCase()) r.checked = true;
+    });
+    aplicarFiltros();
+  }
+
+  // URL param: abrir modal reporte directo
+  const rId     = new URLSearchParams(window.location.search).get('reporte_id');
+  const rNombre = new URLSearchParams(window.location.search).get('reporte_nombre');
+  if (rId && rNombre) reportarTrabajador(rId, rNombre);
+})();
+// ─────────────────────────────────────────────────────
+// Cargar trabajadores
+// ─────────────────────────────────────────────────────
+async function cargarTrabajadores() {
+  try {
+    const data = await apiFetch('/trabajadores');
+    todosTrabajadores = data.trabajadores || [];
+    aplicarFiltros();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('workers-grid').innerHTML =
+      '<div class="no-results">❌ Error al cargar profesionales. Intenta recargar la página.</div>';
+  }
+}
+
+// ─────────────────────────────────────────────────────
+// Filtros
+// ─────────────────────────────────────────────────────
+function aplicarFiltros() {
+  const cat    = document.querySelector('input[name="cat"]:checked')?.value    || 'todas';
+  const disp   = document.querySelector('input[name="disp"]:checked')?.value   || 'todas';
+  const rating = parseFloat(document.querySelector('input[name="rating"]:checked')?.value || '0');
+  const busq   = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const zona   = document.getElementById('filter-zona')?.value || 'todas';
+
+  let filtrados = todosTrabajadores;
+
+  if (cat !== 'todas') {
+    filtrados = filtrados.filter(t =>
+      (t.titulo || '').toLowerCase().includes(cat.toLowerCase()) ||
+      (t.categoria_nombre || '').toLowerCase().includes(cat.toLowerCase())
+    );
+  }
+  if (disp === 'disponible') filtrados = filtrados.filter(t =>  t.disponible);
+  if (disp === 'ocupado')    filtrados = filtrados.filter(t => !t.disponible);
+  if (zona !== 'todas') {
+    filtrados = filtrados.filter(t =>
+      (t.zona || '').toLowerCase().includes(zona.toLowerCase())
+    );
+  }
+  if (rating > 0) {
+    filtrados = filtrados.filter(t => parseFloat(t.rating_promedio ?? 0) >= parseFloat(rating));
+  }
+  if (busq) {
+    filtrados = filtrados.filter(t =>
+      (t.nombre   || '').toLowerCase().includes(busq) ||
+      (t.apellido || '').toLowerCase().includes(busq) ||
+      (t.titulo   || '').toLowerCase().includes(busq)
+    );
+  }
+
+  trabajadoresFiltrados = filtrados;
+
+  const count = filtrados.length;
+  document.getElementById('result-count').textContent =
+    `${count} profesional${count !== 1 ? 'es' : ''} encontrado${count !== 1 ? 's' : ''}`;
+
+  if (vistaActual === 'grid') {
+    renderGrid(filtrados);
+  } else {
+    renderMapa(filtrados);
+  }
+}
+
+// ─────────────────────────────────────────────────────
+// Render cuadrícula
+// ─────────────────────────────────────────────────────
+function renderGrid(lista) {
+  const grid = document.getElementById('workers-grid');
+  if (!lista.length) {
+    grid.innerHTML = '<div class="no-results">🔍 No se encontraron profesionales con esos filtros.</div>';
+    return;
+  }
+  const esMiPerfil = t => usuarioActual && usuarioActual.id === t.id;
+  const enlacePerfil = t => session
+    ? `ver-perfil.html?id=${t.id}`
+    : `login.html?redirect=${encodeURIComponent('ver-perfil.html?id=' + t.id)}`;
+
+  grid.innerHTML = lista.map(t => {
+    const ini    = ((t.nombre||'?')[0] + (t.apellido ? t.apellido[0] : '')).toUpperCase();
+    const avatar = t.foto_url ? `<img src="${t.foto_url}" alt="${t.nombre}">` : ini;
+    const btnChat = !esMiPerfil(t)
+      ? `<button class="btn btn-chat" onclick="irAlChat(${t.id})">
+           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+           Chatear
+         </button>`
+      : '';
+    const btnReporte = !esMiPerfil(t)
+      ? `<button class="btn" style="background:#FEF3C7;color:#854D0E;border:1px solid #FEF08A;font-size:11px;"
+           onclick="reportarTrabajador(${t.id},'${(t.nombre||'').replace(/'/g,"\\'")} ${(t.apellido||'').replace(/'/g,"\\'")}')">
+           Reportar
+         </button>`
+      : '';
+
+    return `
+      <div class="wcard">
+        <div class="wc-header">
+          <div class="wc-avatar">${avatar}</div>
+          <div class="wc-info">
+            <div class="wc-nombre">
+              ${t.nombre} ${t.apellido || ''}
+              ${t.verificado ? '<span class="badge-verif">✔ Verificado</span>' : ''}
+            </div>
+            <div class="wc-titulo">${t.titulo || 'Profesional independiente'}</div>
+          </div>
+        </div>
+        ${t.descripcion ? `<div class="wc-desc">${t.descripcion.substring(0,80)}${t.descripcion.length>80?'…':''}</div>` : ''}
+        <div class="wc-meta">
+          <span>📍 ${t.zona || 'Sin zona'}</span>
+          <span>💰 ${t.precio_desde ? 'Desde $'+t.precio_desde : 'A convenir'}</span>
+          ${t.rating_promedio ? `<span class="rating-mini">⭐ ${t.rating_promedio} (${t.total_servicios||0})</span>` : ''}
+        </div>
+        <span class="${t.disponible ? 'badge-disp' : 'badge-ocup'}">${t.disponible ? '🟢 Disponible' : '🔴 Ocupado'}</span>
+        <div class="wc-actions">
+          <a href="${enlacePerfil(t)}" class="btn btn-primary" style="flex:1;justify-content:center;">Ver perfil</a>
+          ${btnChat}
+          ${btnReporte}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────
+// Geocodificación (Nominatim con cache)
+// ─────────────────────────────────────────────────────
+async function geocodificarZona(zona) {
+  if (!zona) return { lat: -1.2491, lng: -78.6167 };
+  if (geoCache[zona]) return geoCache[zona];
+
+  // Pequeño offset aleatorio para no apilar todos los pins del mismo barrio
+  const jitter = () => (Math.random() - 0.5) * 0.008;
+
+  try {
+    const q = encodeURIComponent(`${zona}, Tungurahua, Ecuador`);
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`);
+    const d = await r.json();
+    if (d.length > 0) {
+      const coords = {
+        lat: parseFloat(d[0].lat) + jitter(),
+        lng: parseFloat(d[0].lon) + jitter()
+      };
+      geoCache[zona] = coords;
+      return coords;
+    }
+  } catch(e) {}
+
+  // Fallback: centro Ambato + jitter
+  const fallback = { lat: -1.2491 + jitter(), lng: -78.6167 + jitter() };
+  geoCache[zona] = fallback;
+  return fallback;
+}
+
+// ─────────────────────────────────────────────────────
+// Render mapa
+// ─────────────────────────────────────────────────────
+async function renderMapa(lista) {
+  const contenedor = document.getElementById('mapa-explorar');
+
+  // Crear mapa si no existe
+  if (!mapaInst) {
+    mapaInst = L.map('mapa-explorar', { zoomControl: true, scrollWheelZoom: false })
+                .setView([-1.2491, -78.6167], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(mapaInst);
+  }
+
+  // Limpiar marcadores anteriores
+  marcadores.forEach(m => m.remove());
+  marcadores = [];
+
+  if (!lista.length) return;
+
+  const enlacePerfil = t => session
+    ? `ver-perfil.html?id=${t.id}`
+    : `login.html?redirect=${encodeURIComponent('ver-perfil.html?id='+t.id)}`;
+
+  // Geocodificar todos con throttle leve para no bloquear Nominatim
+  const conCoords = [];
+  for (const t of lista) {
+    if (!t.zona) continue;
+    const coords = await geocodificarZona(t.zona);
+    conCoords.push({ t, coords });
+    await new Promise(r => setTimeout(r, 80)); // ~12 req/seg máximo
+  }
+
+  const bounds = [];
+
+  conCoords.forEach(({ t, coords }) => {
+    const color     = t.disponible ? '#1D9E75' : '#EF4444';
+    const ini       = ((t.nombre||'?')[0] + (t.apellido ? t.apellido[0] : '')).toUpperCase();
+    const estrellas = t.rating_promedio ? `⭐ ${t.rating_promedio}` : 'Sin reseñas';
+
+    const icono = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:34px;height:34px;
+        background:${color};
+        border:2.5px solid #fff;
+        border-radius:50% 50% 50% 0;
+        transform:rotate(-45deg);
+        box-shadow:0 2px 8px rgba(0,0,0,.25);
+        display:flex;align-items:center;justify-content:center;
+      "><div style="transform:rotate(45deg);font-size:12px;font-weight:800;color:#fff;">${ini}</div></div>`,
+      iconSize: [34, 34],
+      iconAnchor: [17, 34],
+      popupAnchor: [0, -36]
+    });
+
+    const popup = L.popup({ maxWidth: 240, className: '' }).setContent(`
+      <div class="popup-card">
+        <h4>${t.nombre} ${t.apellido||''}</h4>
+        <div class="pc-titulo">${t.titulo || 'Profesional independiente'}</div>
+        <div class="pc-meta">
+          📍 ${t.zona}<br>
+          💰 ${t.precio_desde ? 'Desde $'+t.precio_desde : 'A convenir'}<br>
+          ${estrellas}
+        </div>
+        <span class="pc-badge" style="background:${t.disponible?'#D1FAE5':'#FEE2E2'};color:${t.disponible?'#065F46':'#991B1B'};">
+          ${t.disponible ? '🟢 Disponible' : '🔴 Ocupado'}
+        </span><br><br>
+        <a href="${enlacePerfil(t)}" class="pc-btn">Ver perfil completo →</a>
+      </div>`);
+
+    const marcador = L.marker([coords.lat, coords.lng], { icon: icono })
+      .bindPopup(popup)
+      .addTo(mapaInst);
+
+    marcadores.push(marcador);
+    bounds.push([coords.lat, coords.lng]);
+  });
+
+  // Ajustar vista al conjunto de pins
+  if (bounds.length === 1) {
+    mapaInst.setView(bounds[0], 14);
+  } else if (bounds.length > 1) {
+    mapaInst.fitBounds(bounds, { padding: [40, 40] });
+  }
+
+  setTimeout(() => mapaInst.invalidateSize(), 200);
+}
+
+// ─────────────────────────────────────────────────────
+// Toggle vista
+// ─────────────────────────────────────────────────────
+function cambiarVista(vista) {
+  vistaActual = vista;
+
+  document.getElementById('vista-grid').style.display = vista === 'grid' ? 'block' : 'none';
+  document.getElementById('vista-mapa').style.display = vista === 'mapa' ? 'block' : 'none';
+
+  document.getElementById('btn-vista-grid').classList.toggle('active', vista === 'grid');
+  document.getElementById('btn-vista-mapa').classList.toggle('active', vista === 'mapa');
+
+  if (vista === 'mapa') {
+    renderMapa(trabajadoresFiltrados);
+  }
+}
+
+// ─────────────────────────────────────────────────────
+// Toggle Filtros Móvil
+// ─────────────────────────────────────────────────────
+function toggleFiltrosMovil() {
+  const sidebar  = document.querySelector('.exp-sidebar');
+  const overlay  = document.getElementById('filtros-overlay');
+  const abierto  = sidebar.classList.toggle('abierto');
+  overlay.style.display = abierto ? 'block' : 'none';
+}
+
+// ─────────────────────────────────────────────────────
+// Reportar trabajador
+// ─────────────────────────────────────────────────────
+let _reporteId = null;
+
+function reportarTrabajador(id, nombre) {
+  if (!session) { window.location.href = 'login.html'; return; }
+  _reporteId = id;
+  document.getElementById('rep-subtitulo').textContent =
+    `Estás reportando a ${nombre}. El equipo de OficiosYA revisará tu reporte.`;
+  document.getElementById('rep-motivo').value = '';
+  document.getElementById('rep-desc').value   = '';
+  document.getElementById('rep-alert').style.display = 'none';
+  document.getElementById('modalReporte').style.display = 'flex';
+}
+
+async function enviarReporteExplorar() {
+  const motivo = document.getElementById('rep-motivo').value;
+  if (!motivo) {
+    document.getElementById('rep-alert').textContent = 'Selecciona un motivo.';
+    document.getElementById('rep-alert').style.display = 'block';
+    return;
+  }
+  try {
+    await apiFetch('/reportes', {
+      method: 'POST',
+      body: JSON.stringify({
+        reportado_id:  _reporteId,
+        tipo:          'trabajador',
+        referencia_id: _reporteId,
+        motivo,
+        descripcion: document.getElementById('rep-desc').value.trim() || motivo
+      })
+    });
+    document.getElementById('modalReporte').style.display = 'none';
+    mostrarToast('✅ Reporte enviado. El equipo lo revisará.');
+  } catch(e) {
+    document.getElementById('rep-alert').textContent = e.message;
+    document.getElementById('rep-alert').style.display = 'block';
+  }
+}
+
+// ─────────────────────────────────────────────────────
+// Chat
+// ─────────────────────────────────────────────────────
+function irAlChat(userId) {
+  if (!session) {
+    window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+    return;
+  }
+  window.location.href = `chat.html?with=${userId}`;
+}
+
+// ─────────────────────────────────────────────────────
+// Limpiar filtros
+// ─────────────────────────────────────────────────────
+function clearFilters() {
+  document.querySelectorAll('input[name="cat"]')[0].checked    = true;
+  document.querySelectorAll('input[name="disp"]')[0].checked   = true;
+  document.querySelectorAll('input[name="rating"]')[0].checked = true;
+  document.getElementById('filter-zona').value  = 'todas';
+  document.getElementById('search-input').value = '';
+  aplicarFiltros();
+}
+</script>
+
+<!-- Notificaciones -->
+<script>
+const _session = getSession();
+const _token   = _session?.token;
+const _API     = 'http://localhost:3000/api';
+let   _notifs  = [];
+
+async function cargarNotificaciones() {
+  if (!_token) return;
+  try {
+    const r    = await fetch(`${_API}/notificaciones`, { headers: { 'Authorization': `Bearer ${_token}` } });
+    const data = await r.json();
+    _notifs = data.notificaciones || [];
+    renderNotificaciones();
+  } catch(e) {}
+}
+
+function renderNotificaciones() {
+  const noLeidas = _notifs.filter(n => !n.leida).length;
+  const badge    = document.getElementById('notif-badge');
+  if (badge) { badge.textContent = noLeidas > 9 ? '9+' : noLeidas; badge.style.display = noLeidas > 0 ? 'block' : 'none'; }
+  const body = document.getElementById('notif-body');
+  if (!body) return;
+  if (!_notifs.length) { body.innerHTML = '<div style="padding:32px 16px;text-align:center;color:#9CA3AF;font-size:13px;">No tienes notificaciones.</div>'; return; }
+  const icons = { advertencia:'⚠️', verificacion:'🔔', mensaje:'💬', default:'🔔' };
+  body.innerHTML = _notifs.slice(0,10).map(n => `
+    <div onclick="marcarLeida(${n.id})" style="display:flex;gap:12px;padding:13px 16px;border-bottom:1px solid #F3F4F6;cursor:pointer;background:${n.leida?'#fff':'#F0FDF4'};${!n.leida?'border-left:3px solid #1D9E75;':''}">
+      <span style="font-size:20px;">${icons[n.tipo]||icons.default}</span>
+      <div>
+        <p style="margin:0 0 3px;font-size:13px;color:#374151;"><strong>${n.titulo}</strong><br>${n.mensaje||''}</p>
+        <span style="font-size:11px;color:#9CA3AF;">${tiempoRelativo(n.createdat)}</span>
+      </div>
+    </div>`).join('');
+}
+
+function tiempoRelativo(fecha) {
+  const diff = Date.now() - new Date(fecha).getTime();
+  const min  = Math.floor(diff/60000);
+  if (min < 1)    return 'Ahora mismo';
+  if (min < 60)   return `Hace ${min} min`;
+  if (min < 1440) return `Hace ${Math.floor(min/60)} h`;
+  return `Hace ${Math.floor(min/1440)} día(s)`;
+}
+
+async function marcarLeida(id) {
+  await fetch(`${_API}/notificaciones/${id}/leer`, { method:'PUT', headers:{ 'Authorization':`Bearer ${_token}` } });
+  const n = _notifs.find(n => n.id === id);
+  if (n) n.leida = true;
+  renderNotificaciones();
+}
+
+async function marcarTodasLeidas(event) {
+  if (event) event.stopPropagation();
+  await fetch(`${_API}/notificaciones/leer-todas`, { method:'PUT', headers:{ 'Authorization':`Bearer ${_token}` } });
+  _notifs.forEach(n => n.leida = true);
+  renderNotificaciones();
+}
+
+function toggleNotificaciones(event) {
+  if (event) event.stopPropagation();
+  const n = document.getElementById('notifDropdown');
+  const abriendo = n.style.display === 'none';
+  n.style.display = abriendo ? 'block' : 'none';
+  if (abriendo) cargarNotificaciones();
+}
+
+if (_session) { cargarNotificaciones(); setInterval(cargarNotificaciones, 30000); }
+</script>
+
+<!-- Overlay para cerrar el menú móvil de filtros -->
+<div id="filtros-overlay" onclick="toggleFiltrosMovil()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;"></div>
+
+</body>
+</html>

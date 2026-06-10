@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión — OficiosYA</title>
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body class="auth-page">
+<div class="auth-layout">
+
+  <div class="auth-left">
+    <a href="../index.html" class="auth-logo">
+      <div class="logo-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" opacity=".9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none" opacity=".9"/><circle cx="17" cy="6" r="3" fill="#C8860A" opacity=".85"/></svg></div>
+      <span class="logo-text">Oficios<span class="logo-ya">YA</span></span>
+    </a>
+    <div class="auth-left-content">
+      <h2 class="auth-left-title">Conectamos talento local con quienes lo necesitan.</h2>
+      <div class="testimonial"><div class="test-avatar" style="background:#2563EB;">RM</div><div><div class="test-name">Roberto Mendoza</div><div class="test-text">"Conseguí 3 clientes nuevos la primera semana."</div></div></div>
+      <div class="testimonial"><div class="test-avatar" style="background:#7C3AED;">LP</div><div><div class="test-name">Lucía Paredes</div><div class="test-text">"Muy fácil de usar, mis clientes confían más en mí."</div></div></div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-form-wrapper">
+      <h1 class="auth-form-title">Bienvenido de vuelta</h1>
+      <p class="auth-form-sub">Ingresa tus datos para acceder</p>
+
+      <div id="alert-box" class="alert-box" style="display:none;"></div>
+
+      <form class="auth-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            <input type="email" id="email" class="form-input" placeholder="tucorreo@email.com" required>
+          </div>
+          <span class="field-error" id="email-error"></span>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label class="form-label">Contraseña</label>
+            <a href="olvide-password.html" class="forgot-link">¿Olvidaste tu contraseña?</a>
+          </div>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="password" class="form-input" placeholder="Tu contraseña" required>
+            <button type="button" class="toggle-pass" onclick="togglePassword('password',this)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error" id="pass-error"></span>
+        </div>
+
+        <div class="form-group" style="flex-direction:row;align-items:center;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="remember" class="checkbox-input">
+            <span class="checkbox-custom"></span>
+            Recordar mi sesión
+          </label>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">
+          <span id="btn-text">Iniciar sesión</span>
+          <div id="btn-spinner" class="spinner" style="display:none;"></div>
+        </button>
+      </form>
+
+      <p class="auth-switch">¿No tienes cuenta? <a href="registro.html" class="auth-switch-link">Regístrate gratis</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+// Verificar si hay una URL a la cual regresar después del login
+const urlParams = new URLSearchParams(window.location.search);
+const redirectUrl = urlParams.get('redirect');
+
+if (getSession()) {
+  window.location.href = redirectUrl ? redirectUrl : 'dashboard.html';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  hideAlert();
+  document.getElementById('email-error').textContent = '';
+  document.getElementById('pass-error').textContent  = '';
+
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  // Opcional: leer el checkbox para mandarlo al backend si lo soporta
+  // const remember = document.getElementById('remember').checked;
+  let valid = true;
+
+  if (!isValidEmail(email)) { document.getElementById('email-error').textContent = 'Correo no válido.'; valid = false; }
+  if (!password)             { document.getElementById('pass-error').textContent  = 'Ingresa tu contraseña.'; valid = false; }
+  if (!valid) return;
+
+  setLoading(true);
+  try {
+    const data = await Auth.login({ email, password });
+    setSession(data);
+    showAlert('¡Bienvenido! Redirigiendo...', 'success');
+    
+    // Determinar destino: Admin -> panel de admin, Redirección pendiente -> la redirección, Default -> dashboard
+    let dest = data.usuario?.is_admin ? 'admin.html' : 'dashboard.html';
+    
+    if (redirectUrl && !data.usuario?.is_admin) {
+      dest = redirectUrl;
+    }
+
+    setTimeout(() => window.location.href = dest, 900);
+  } catch (err) {
+    setLoading(false);
+    showAlert(err.message, 'error');
+  }
+}
+</script>
+</body>
+</html>

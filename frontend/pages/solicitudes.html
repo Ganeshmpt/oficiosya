@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitudes — OficiosYA</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    .sol-wrap{max-width:1100px;margin:0 auto;padding:32px 24px;}
+    .sol-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;}
+    .sol-title{font-size:24px;font-weight:800;}
+    .tabs{display:flex;background:#F3F4F6;border-radius:8px;padding:3px;gap:3px;margin-bottom:20px;}
+    .tab{flex:1;padding:8px;border-radius:6px;border:none;font-size:13px;font-weight:600;cursor:pointer;color:#6B7280;font-family:inherit;background:transparent;transition:all .15s;}
+    .tab.active{background:#1D9E75;color:#fff;}
+    .sol-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;}
+    .sol-row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;}
+    .sol-titulo{font-size:15px;font-weight:700;color:#111827;margin-bottom:4px;}
+    .sol-desc{font-size:13px;color:#6B7280;}
+    .sol-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:#6B7280;}
+    .sol-estado{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;}
+    .e-abierta{background:#D1FAE5;color:#065F46;}
+    .e-confirmada{background:#DBEAFE;color:#1E40AF;}
+    .e-en_curso{background:#FEF3C7;color:#92400E;}
+    .e-finalizado{background:#D1FAE5;color:#065F46;}
+    .e-cancelada{background:#FEE2E2;color:#991B1B;}
+    .e-rechazado{background:#FEE2E2;color:#991B1B;}
+    .btn{border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
+    .btn-primary{background:#1D9E75;color:#fff;} .btn-primary:hover{background:#0F6E56;}
+    .btn-outline{background:none;border:1px solid #E5E7EB;color:#374151;text-decoration:none;display:inline-flex;align-items:center;} .btn-outline:hover{border-color:#1D9E75;color:#1D9E75;}
+    .btn-danger{background:none;border:1px solid #FEE2E2;color:#EF4444;} .btn-danger:hover{background:#FEE2E2;}
+    .btn-warning{background:#F59E0B;color:#fff;} .btn-warning:hover{background:#D97706;}
+    .btn-report{background:none;border:1px solid #FEF08A;color:#854D0E;font-size:11px;padding:5px 10px;} .btn-report:hover{background:#FEF08A;}
+    .btn-map{background:none;border:1px solid #DBEAFE;color:#1E40AF;font-size:11px;padding:5px 10px;} .btn-map:hover{background:#DBEAFE;}
+    .empty{text-align:center;padding:48px;color:#9CA3AF;}
+    .search-bar{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #E5E7EB;border-radius:8px;padding:8px 14px;}
+    .search-bar input{border:none;outline:none;font-size:13px;font-family:inherit;color:#111827;background:transparent;width:100%;}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;}
+    .modal-c{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;animation:mIn .2s ease;}
+    @keyframes mIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .m-close{position:absolute;top:12px;right:12px;width:26px;height:26px;background:#F3F4F6;border:none;border-radius:50%;cursor:pointer;font-size:12px;color:#6B7280;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    @media(max-width:600px){.form-grid{grid-template-columns:1fr;} .sol-row{flex-direction:column;}}
+    .postulante-card{display:flex;align-items:center;justify-content:space-between;padding:10px;border:1px solid #E5E7EB;border-radius:8px;margin-bottom:8px;gap:10px;flex-wrap:wrap;}
+    .filtro-mis{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+    .resumen-estados{font-size:12px;color:#6B7280;background:#F9FAFB;padding:4px 10px;border-radius:20px;}
+    .estrella{font-size:28px;cursor:pointer;color:#D1D5DB;transition:color .1s;}
+    .zona-badge{display:inline-block;font-size:10px;font-weight:700;background:#D1FAE5;color:#065F46;padding:2px 6px;border-radius:4px;margin-left:4px;vertical-align:middle;}
+    .cal-box{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:14px;margin-bottom:10px;flex:1;min-width:140px;}
+    .cal-box-done{background:#D1FAE5;border-color:#6EE7B7;}
+    .cal-step{display:flex;align-items:center;gap:10px;font-size:12px;color:#374151;}
+    .cal-step-icon{font-size:18px;}
+    .cal-step-done{color:#065F46;font-weight:600;}
+    .progress-bar{height:6px;background:#E5E7EB;border-radius:999px;margin:12px 0;}
+    .progress-fill{height:100%;background:#1D9E75;border-radius:999px;transition:width .4s;}
+    .rol-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#EDE9FE;color:#5B21B6;margin-left:6px;}
+    .toast{position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:10px;font-weight:600;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.15);animation:slideIn .3s ease;}
+    .toast-success{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;}
+    .toast-error{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;}
+    @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+    .reporte-motivos{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+    .motivo-opt{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:8px;cursor:pointer;font-size:13px;transition:all .15s;}
+    .motivo-opt:hover{border-color:#1D9E75;background:#F0FDF4;}
+    .motivo-opt.selected{border-color:#1D9E75;background:#F0FDF4;font-weight:600;}
+    .alert-box{padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;}
+    .alert-error{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;}
+    .alert-success{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;}
+    /* MAPA */
+    .modal-mapa .modal-c{max-width:700px;max-height:95vh;padding:16px;}
+    #mapa-container{width:100%;height:420px;border-radius:10px;overflow:hidden;margin-top:12px;z-index:1;}
+    .mapa-info{background:#F0FDF4;border:1px solid #6EE7B7;border-radius:8px;padding:10px 14px;font-size:13px;color:#065F46;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+    .mapa-ruta-info{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:10px 14px;font-size:13px;color:#1E40AF;margin-top:8px;display:none;}
+    .mapa-loading{text-align:center;padding:20px;color:#6B7280;font-size:13px;}
+
+    /* ── SOLICITUDES RESPONSIVE MÓVIL ── */
+    @media (max-width: 640px) {
+      .sol-wrap { padding: 16px; }
+      /* Header: título arriba, buscador+botón abajo */
+      .sol-header { flex-direction: column; align-items: stretch; }
+      .sol-header > div:last-child { flex-direction: column; }
+      .sol-header > div:last-child .search-bar { width: 100%; }
+      .sol-header > div:last-child .btn { width: 100%; justify-content: center; }
+      /* Tabs */
+      .tabs { font-size: 12px; }
+      .tab  { padding: 7px 4px; }
+      /* Filtros mis solicitudes */
+      .filtro-mis { flex-direction: column; align-items: stretch; }
+      .filtro-mis select { width: 100%; }
+      /* Card: botones en columna */
+      .sol-row { flex-direction: column; }
+      .sol-row > div:last-child {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .sol-row .btn { font-size: 11px; padding: 6px 10px; }
+      /* Modal detalle: grid 2 cols → 1 col */
+      #detalle-content div[style*="grid-template-columns:1fr 1fr"] {
+        display: flex !important;
+        flex-direction: column;
+        gap: 6px !important;
+      }
+      /* Modal postulantes: botones en columna */
+      .postulante-card { flex-direction: column; align-items: flex-start; }
+      .postulante-card > div:last-child { width: 100%; }
+      /* Modales full width */
+      .modal-c { padding: 18px 14px; }
+      /* Notificaciones dropdown full width */
+      #notifDropdown {
+        position: fixed !important;
+        top: 60px !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        border-radius: 0 0 12px 12px !important;
+      }
+      /* User dropdown full width */
+      .user-dropdown {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 0 0 12px 12px;
+      }
+      /* Mapa altura reducida en móvil */
+      #mapa-container { height: 260px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" opacity=".9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="17" cy="6" r="3" fill="#C8860A"/></svg></div>
+      <span class="logo-text">Oficios<span class="logo-ya">YA</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="dashboard.html"   class="nav-link private-link" style="display:none;">Mi Panel</a>
+      <a href="explorar.html"    class="nav-link">Explorar</a>
+      <a href="solicitudes.html" class="nav-link active">Solicitudes</a>
+      <a href="chat.html"        class="nav-link nav-chat-link private-link" style="display:none;">
+        Chat<span class="nav-chat-badge" id="nav-chat-badge">0</span>
+      </a>
+      <a href="perfil.html"      class="nav-link private-link" style="display:none;">Mi Perfil</a>
+    </div>
+    <div class="nav-actions" id="nav-guest">
+      <a href="login.html"    class="btn btn-outline">Iniciar sesión</a>
+      <a href="registro.html" class="btn btn-primary">Registrarse</a>
+    </div>
+    <div class="nav-actions nav-user-area" id="nav-auth" style="display:none;">
+      <div class="nav-notification" id="notif-btn" onclick="toggleNotificaciones(event)" style="position:relative;margin-right:12px;cursor:pointer;display:flex;align-items:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span id="notif-badge" style="display:none;position:absolute;top:-6px;right:-6px;background:#EF4444;color:#fff;font-size:10px;font-weight:800;padding:2px 5px;border-radius:999px;border:2px solid #1D9E75;min-width:18px;text-align:center;">0</span>
+        <div id="notifDropdown" style="display:none;position:absolute;top:45px;right:-10px;width:320px;background:#fff;border:1px solid #E5E7EB;border-radius:12px;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);z-index:1000;color:#111827;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-weight:700;border-bottom:1px solid #E5E7EB;font-size:14px;">
+            <span>Notificaciones</span>
+            <button onclick="marcarTodasLeidas(event)" style="font-size:11px;color:#1D9E75;background:none;border:none;cursor:pointer;font-weight:600;font-family:inherit;">Marcar todas como leídas</button>
+          </div>
+          <div id="notif-body" style="max-height:320px;overflow-y:auto;">
+            <div style="padding:32px 16px;text-align:center;color:#9CA3AF;font-size:13px;">Cargando...</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-avatar-btn" onclick="toggleUserMenu()">
+        <div class="nav-avatar" id="nav-avatar">U</div>
+        <span id="nav-username">Usuario</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="user-dropdown" id="userDropdown" style="display:none;">
+        <div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;">
+          <div style="font-weight:600;font-size:14px;" id="drop-name">—</div>
+          <div style="font-size:12px;color:#6B7280;" id="drop-email">—</div>
+        </div>
+        <a href="dashboard.html"   class="dropdown-item">Mi panel</a>
+        <a href="perfil.html"      class="dropdown-item">Mi perfil</a>
+        <a href="solicitudes.html" class="dropdown-item">Solicitudes</a>
+        <a href="chat.html"        class="dropdown-item">💬 Mis mensajes</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item dropdown-logout" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+    <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile-menu" id="mobileMenu">
+    <a href="../index.html"    class="nav-mobile-link">🏠 Inicio</a>
+    <a href="explorar.html"    class="nav-mobile-link">🔍 Explorar</a>
+    <a href="solicitudes.html" class="nav-mobile-link">📋 Solicitudes</a>
+    <div class="nav-mobile-divider"></div>
+    <div id="mob-guest-actions" class="nav-mobile-actions">
+      <a href="login.html"    class="nav-mobile-btn-out">Iniciar sesión</a>
+      <a href="registro.html" class="nav-mobile-btn-pri">Registrarse</a>
+    </div>
+    <div id="mob-auth-actions" style="display:none;">
+      <a href="dashboard.html" class="nav-mobile-link">Mi panel</a>
+      <a href="perfil.html"    class="nav-mobile-link">Mi perfil</a>
+      <button onclick="logout()" class="nav-mobile-link" style="background:none;border:none;color:#EF4444;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;padding:12px 8px;width:100%;">Cerrar sesión</button>
+    </div>
+  </div>
+</nav>
+
+<div class="sol-wrap">
+  <div class="sol-header">
+    <div>
+      <div class="sol-title">Solicitudes de Servicio</div>
+      <div style="font-size:13px;color:#6B7280;" id="sol-count">Cargando...</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <div class="search-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Buscar..." id="search-input" oninput="filtrar()">
+      </div>
+      <button class="btn btn-primary" onclick="abrirFormulario()" id="btn-crear">+ Nueva</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-todas" onclick="cambiarTab('todas')">Todas abiertas</button>
+    <button class="tab" id="tab-mias"  onclick="cambiarTab('mias')">Mis solicitudes</button>
+  </div>
+
+  <div id="filtro-mis-solicitudes" style="display:none;" class="filtro-mis">
+    <select id="estado-filter" class="form-input" onchange="render()">
+      <option value="abierta">📋 Abiertas</option>
+      <option value="confirmada">🤝 Confirmadas</option>
+      <option value="en_curso">⚙️ En curso</option>
+      <option value="finalizado">✅ Finalizadas</option>
+      <option value="cancelada">❌ Canceladas</option>
+    </select>
+    <select id="rol-filter" class="form-input" onchange="render()">
+      <option value="todos">👤 Todos los roles</option>
+      <option value="cliente">🙋 Como cliente</option>
+      <option value="trabajador">🔧 Como trabajador</option>
+    </select>
+    <span id="resumen-estados" class="resumen-estados"></span>
+  </div>
+
+  <div id="alert-box" class="alert-box" style="display:none;margin-bottom:16px;"></div>
+  <div id="lista-solicitudes"></div>
+</div>
+
+<div class="modal modal-mapa" id="modalMapa" style="display:none;" onclick="if(event.target===this) cerrarModal('modalMapa')">
+  <div class="modal-c">
+    <button class="m-close" onclick="cerrarModal('modalMapa')">✕</button>
+    <h3 style="margin-top:0;margin-bottom:8px;" id="mapa-titulo">📍 Ubicación</h3>
+    <div id="mapa-info-box" class="mapa-info"></div>
+    <div id="mapa-container"></div>
+    <div id="mapa-ruta-info" class="mapa-ruta-info"></div>
+    <div id="mapa-loading" class="mapa-loading" style="display:none;">🗺️ Calculando ruta...</div>
+  </div>
+</div>
+
+<div class="modal" id="modalForm" style="display:none;" onclick="if(event.target===this) cerrarModal('modalForm')">
+  <div class="modal-c">
+    <button class="m-close" onclick="cerrarModal('modalForm')">✕</button>
+    <h2 id="modal-form-title" style="margin-top:0;">Nueva Solicitud</h2>
+    <div id="alert-form" class="alert-box" style="display:none;margin-bottom:12px;"></div>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label">¿Qué necesitas? *</label>
+        <input type="text" id="f-titulo" class="form-input" placeholder="Ej: Reparar fuga en el baño">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoría</label>
+        <select id="f-categoria" class="form-input"><option value="">Selecciona una categoría</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Urgencia</label>
+        <select id="f-urgencia" class="form-input">
+          <option value="normal" selected>Normal</option>
+          <option value="urgente">Urgente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Presupuesto ($)</label>
+        <input type="number" id="f-presupuesto" class="form-input" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha preferida</label>
+        <input type="date" id="f-fecha" class="form-input">
+      </div>
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label">Zona / Sector <span class="zona-badge">Tungurahua</span></label>
+        <select id="f-zona" class="form-input">
+          <option value="">— Selecciona tu zona —</option>
+          <optgroup label="🏙 Ambato">
+            <option value="Ambato - Centro">Ambato - Centro</option>
+            <option value="Ambato - La Merced">Ambato - La Merced</option>
+            <option value="Ambato - Ficoa">Ambato - Ficoa</option>
+            <option value="Ambato - Atocha">Ambato - Atocha</option>
+            <option value="Ambato - Huachi">Ambato - Huachi</option>
+            <option value="Ambato - Ingahurco">Ambato - Ingahurco</option>
+            <option value="Ambato - Miraflores">Ambato - Miraflores</option>
+            <option value="Ambato - Cashapamba">Ambato - Cashapamba</option>
+            <option value="Ambato - El Recreo">Ambato - El Recreo</option>
+            <option value="Ambato - Izamba">Ambato - Izamba</option>
+            <option value="Ambato - Picaihua">Ambato - Picaihua</option>
+            <option value="Ambato - Quisapincha">Ambato - Quisapincha</option>
+            <option value="Ambato - Juan Benigno Vela">Ambato - Juan Benigno Vela</option>
+            <option value="Ambato - Pishilata">Ambato - Pishilata</option>
+          </optgroup>
+          <optgroup label="🏘 Baños de Agua Santa">
+            <option value="Baños - Centro">Baños - Centro</option>
+            <option value="Baños - El Salado">Baños - El Salado</option>
+            <option value="Baños - Lligua">Baños - Lligua</option>
+            <option value="Baños - Ulba">Baños - Ulba</option>
+          </optgroup>
+          <optgroup label="🏘 Pelileo">
+            <option value="Pelileo - Centro">Pelileo - Centro</option>
+            <option value="Pelileo - Salasaca">Pelileo - Salasaca</option>
+            <option value="Pelileo - Benítez">Pelileo - Benítez</option>
+            <option value="Pelileo - García Moreno">Pelileo - García Moreno</option>
+          </optgroup>
+          <optgroup label="🏘 Píllaro">
+            <option value="Píllaro - Centro">Píllaro - Centro</option>
+            <option value="Píllaro - San Andrés">Píllaro - San Andrés</option>
+            <option value="Píllaro - Marcos Espinel">Píllaro - Marcos Espinel</option>
+          </optgroup>
+          <optgroup label="🏘 Patate">
+            <option value="Patate - Centro">Patate - Centro</option>
+            <option value="Patate - Los Andes">Patate - Los Andes</option>
+          </optgroup>
+          <optgroup label="🏘 Tisaleo"><option value="Tisaleo - Centro">Tisaleo - Centro</option></optgroup>
+          <optgroup label="🏘 Mocha"><option value="Mocha - Centro">Mocha - Centro</option></optgroup>
+          <optgroup label="🏘 Quero"><option value="Quero - Centro">Quero - Centro</option></optgroup>
+          <optgroup label="🏘 Cevallos"><option value="Cevallos - Centro">Cevallos - Centro</option></optgroup>
+          <optgroup label="🏘 Santiago de Píllaro"><option value="Santiago de Píllaro">Santiago de Píllaro</option></optgroup>
+        </select>
+      </div>
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label">Descripción</label>
+        <textarea id="f-descripcion" class="form-input" rows="3" placeholder="Describe el trabajo con más detalle..."></textarea>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="guardarSolicitud()" id="btn-guardar">Publicar solicitud</button>
+  </div>
+</div>
+
+<div class="modal" id="modalPostular" style="display:none;" onclick="if(event.target===this) cerrarModal('modalPostular')">
+  <div class="modal-c">
+    <button class="m-close" onclick="cerrarModal('modalPostular')">✕</button>
+    <h3 style="margin-top:0;">Postularme a solicitud</h3>
+    <div id="alert-postular" class="alert-box" style="display:none;margin-bottom:12px;"></div>
+    <div class="form-group">
+      <label class="form-label">Mensaje (opcional)</label>
+      <textarea id="p-mensaje" class="form-input" rows="2" placeholder="Preséntate brevemente..."></textarea>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Precio oferta ($)</label>
+        <input type="number" id="p-precio" class="form-input" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Disponibilidad</label>
+        <input type="text" id="p-disponibilidad" class="form-input" placeholder="Ej: Lunes a Viernes">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="confirmarPostular()">Enviar Postulación</button>
+  </div>
+</div>
+
+<div class="modal" id="modalPostulaciones" style="display:none;" onclick="if(event.target===this) cerrarModal('modalPostulaciones')">
+  <div class="modal-c" style="max-width:600px;">
+    <button class="m-close" onclick="cerrarModal('modalPostulaciones')">✕</button>
+    <h3 style="margin-top:0;">Postulantes</h3>
+    <div id="lista-postulantes">Cargando...</div>
+  </div>
+</div>
+
+<div class="modal" id="modalDetalle" style="display:none;" onclick="if(event.target===this) cerrarModal('modalDetalle')">
+  <div class="modal-c" style="max-width:600px;">
+    <button class="m-close" onclick="cerrarModal('modalDetalle')">✕</button>
+    <h3 style="margin-top:0;margin-bottom:16px;">Detalles de la Solicitud</h3>
+    <div id="detalle-content">Cargando...</div>
+  </div>
+</div>
+
+<div class="modal" id="modalConfirm" style="display:none;" onclick="if(event.target===this) cerrarModal('modalConfirm')">
+  <div class="modal-c" style="max-width:400px;">
+    <button class="m-close" onclick="cerrarModal('modalConfirm')">✕</button>
+    <div style="text-align:center;padding:20px 0;">
+      <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+      <p id="confirm-mensaje" style="font-size:15px;color:#374151;margin-bottom:24px;">¿Estás seguro?</p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="btn btn-outline" onclick="cerrarModal('modalConfirm')">Cancelar</button>
+        <button class="btn btn-primary" id="confirm-aceptar" style="background:#EF4444;">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalCalificar" style="display:none;" onclick="if(event.target===this) cerrarModal('modalCalificar')">
+  <div class="modal-c" style="max-width:460px;">
+    <button class="m-close" onclick="cerrarModal('modalCalificar')">✕</button>
+    <h3 style="margin-top:0;" id="cal-titulo">Calificar servicio</h3>
+    <div id="alert-calificar" class="alert-box" style="display:none;margin-bottom:12px;"></div>
+    <div id="cal-estado-wrap" style="margin-bottom:16px;"></div>
+    <div id="cal-form-wrap"></div>
+  </div>
+</div>
+
+<div class="modal" id="modalReporte" style="display:none;" onclick="if(event.target===this) cerrarModal('modalReporte')">
+  <div class="modal-c" style="max-width:460px;">
+    <button class="m-close" onclick="cerrarModal('modalReporte')">✕</button>
+    <h3 style="margin-top:0;">⚠️ Reportar</h3>
+    <p id="reporte-subtitulo" style="font-size:13px;color:#6B7280;margin-bottom:14px;"></p>
+    <div id="alert-reporte" class="alert-box" style="display:none;margin-bottom:12px;"></div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">Motivo del reporte *</label>
+      <div class="reporte-motivos">
+        <div class="motivo-opt" onclick="seleccionarMotivo(this,'Estafa o fraude')">💸 Estafa o fraude</div>
+        <div class="motivo-opt" onclick="seleccionarMotivo(this,'Comportamiento inapropiado')">🚫 Comportamiento inapropiado</div>
+        <div class="motivo-opt" onclick="seleccionarMotivo(this,'Trabajo de mala calidad')">🔧 Trabajo de mala calidad</div>
+        <div class="motivo-opt" onclick="seleccionarMotivo(this,'No se presentó')">❌ No se presentó</div>
+        <div class="motivo-opt" onclick="seleccionarMotivo(this,'Otro')">📝 Otro</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción adicional (opcional)</label>
+      <textarea id="reporte-descripcion" class="form-input" rows="3" placeholder="Proporciona más detalles..."></textarea>
+    </div>
+    <button class="btn btn-primary" style="width:100%;background:#EF4444;" onclick="enviarReporte()">Enviar Reporte</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/api.js"></script>
+<script>
+(function abrirSolicitudDesdeURL() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (!id) return;
+  // Esperar a que init() cargue los datos
+  setTimeout(() => {
+    cambiarTab('mias');
+    setTimeout(() => verDetalle(parseInt(id)), 600);
+  }, 1500);
+})();
+// ─────────────────────────────────────────────────────
+// Estado global
+// ─────────────────────────────────────────────────────
+const sesion   = getSession();
+const API_BASE = 'http://localhost:3000/api';
+let tabActual             = 'todas';
+let todasAbiertas         = [];
+let misSols               = [];
+let solsComoTrabajador    = [];
+let categorias            = [];
+let solicitudEditando     = null;
+let solicitudPostulandoId = null;
+let calificandoData       = { solicitud_id: null, calificado_id: null };
+let puntajeSeleccionado   = 0;
+let reporteData           = { tipo: null, referencia_id: null, nombre: '' };
+let motivoSeleccionado    = '';
+let mapaInstance          = null;
+
+// ─────────────────────────────────────────────────────
+// UTILS — showAlert y mostrarToast
+// ─────────────────────────────────────────────────────
+function showAlert(msg, tipo = 'error', elId = 'alert-box') {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.textContent  = msg;
+  el.className    = `alert-box alert-${tipo}`;
+  el.style.display = 'block';
+  if (tipo === 'success') setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+function mostrarToast(msg, tipo = 'success') {
+  const t = document.createElement('div');
+  t.className   = `toast toast-${tipo}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ─────────────────────────────────────────────────────
+// NAVBAR
+// ─────────────────────────────────────────────────────
+function toggleUserMenu() {
+  const d = document.getElementById('userDropdown');
+  d.style.display = d.style.display === 'none' ? 'flex' : 'none';
+}
+function toggleMobileMenu() {
+  const m = document.getElementById('mobileMenu');
+  const h = document.getElementById('hamburger');
+  const open = m.classList.toggle('open');
+  h.classList.toggle('open', open);
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.nav-user-area'))
+    document.getElementById('userDropdown').style.display = 'none';
+  if (!e.target.closest('.navbar')) {
+    document.getElementById('mobileMenu')?.classList.remove('open');
+    document.getElementById('hamburger')?.classList.remove('open');
+  }
+  if (!e.target.closest('#notif-btn'))
+    document.getElementById('notifDropdown').style.display = 'none';
+});
+
+// ─────────────────────────────────────────────────────
+// COORDS POR ZONA
+// ─────────────────────────────────────────────────────
+const COORDS_ZONA = {
+  'Ambato - Centro':            [-1.2543, -78.6236],
+  'Ambato - La Merced':         [-1.2480, -78.6190],
+  'Ambato - Ficoa':             [-1.2390, -78.6150],
+  'Ambato - Atocha':            [-1.2650, -78.6280],
+  'Ambato - Huachi':            [-1.2700, -78.6100],
+  'Ambato - Ingahurco':         [-1.2600, -78.6350],
+  'Ambato - Miraflores':        [-1.2500, -78.6400],
+  'Ambato - Cashapamba':        [-1.2450, -78.6300],
+  'Ambato - El Recreo':         [-1.2580, -78.6200],
+  'Ambato - Izamba':            [-1.2300, -78.6100],
+  'Ambato - Picaihua':          [-1.2800, -78.5900],
+  'Ambato - Quisapincha':       [-1.2200, -78.6700],
+  'Ambato - Juan Benigno Vela': [-1.2650, -78.6450],
+  'Ambato - Pishilata':         [-1.2750, -78.6300],
+  'Baños - Centro':             [-1.3967, -78.4247],
+  'Baños - El Salado':          [-1.3980, -78.4300],
+  'Baños - Lligua':             [-1.4050, -78.4100],
+  'Baños - Ulba':               [-1.3900, -78.4000],
+  'Pelileo - Centro':           [-1.3297, -78.5428],
+  'Pelileo - Salasaca':         [-1.3400, -78.5600],
+  'Pelileo - Benítez':          [-1.3200, -78.5300],
+  'Pelileo - García Moreno':    [-1.3100, -78.5500],
+  'Píllaro - Centro':           [-1.1761, -78.5364],
+  'Píllaro - San Andrés':       [-1.1900, -78.5500],
+  'Píllaro - Marcos Espinel':   [-1.1600, -78.5200],
+  'Patate - Centro':            [-1.3042, -78.5033],
+  'Patate - Los Andes':         [-1.3100, -78.4900],
+  'Tisaleo - Centro':           [-1.3500, -78.6600],
+  'Mocha - Centro':             [-1.4200, -78.6400],
+  'Quero - Centro':             [-1.4100, -78.6100],
+  'Cevallos - Centro':          [-1.3600, -78.6200],
+  'Santiago de Píllaro':        [-1.1761, -78.5364],
+};
+function obtenerCoordsZona(zona) {
+  if (!zona) return [-1.2543, -78.6236];
+  if (COORDS_ZONA[zona]) return COORDS_ZONA[zona];
+  const key = Object.keys(COORDS_ZONA).find(k => zona.toLowerCase().includes(k.toLowerCase().split(' - ')[0].toLowerCase()));
+  return key ? COORDS_ZONA[key] : [-1.2543, -78.6236];
+}
+
+// ─────────────────────────────────────────────────────
+// MAPA
+// ─────────────────────────────────────────────────────
+async function abrirMapa(solicitud) {
+  document.getElementById('modalMapa').style.display    = 'flex';
+  document.getElementById('mapa-titulo').textContent    = `📍 ${solicitud.titulo}`;
+  document.getElementById('mapa-ruta-info').style.display = 'none';
+  document.getElementById('mapa-loading').style.display   = 'none';
+
+  const coordsCliente = obtenerCoordsZona(solicitud.zona);
+  const esTrabajador  = sesion && solicitud.trabajador_id === sesion.usuario.id;
+  const mostrarRuta   = esTrabajador && ['confirmada', 'en_curso'].includes(solicitud.estado);
+
+  document.getElementById('mapa-info-box').innerHTML = `
+    📍 <strong>Zona del servicio:</strong> ${solicitud.zona || 'No especificada'}
+    ${mostrarRuta ? ' &nbsp;|&nbsp; 🧭 Calculando ruta desde tu zona...' : ''}
+  `;
+
+  if (mapaInstance) { mapaInstance.remove(); mapaInstance = null; }
+
+  mapaInstance = L.map('mapa-container').setView(coordsCliente, 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a>', maxZoom: 19
+  }).addTo(mapaInstance);
+
+  const iconCliente = L.divIcon({
+    html: '<div style="background:#EF4444;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>',
+    iconSize: [28,28], iconAnchor: [14,28], className: ''
+  });
+  L.marker(coordsCliente, { icon: iconCliente })
+   .addTo(mapaInstance)
+   .bindPopup(`<strong>📍 ${solicitud.zona || 'Zona del servicio'}</strong><br>${solicitud.titulo}`)
+   .openPopup();
+
+  if (mostrarRuta && sesion?.usuario?.zona) {
+    const zonaT = sesion.usuario.zona;
+    const coordsT = obtenerCoordsZona(zonaT);
+    const iconT = L.divIcon({
+      html: '<div style="background:#1D9E75;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>',
+      iconSize: [28,28], iconAnchor: [14,28], className: ''
+    });
+    L.marker(coordsT, { icon: iconT }).addTo(mapaInstance).bindPopup(`<strong>🔧 Tu zona</strong><br>${zonaT}`);
+    try {
+      document.getElementById('mapa-loading').style.display = 'block';
+      const [la1,lo1] = coordsT; const [la2,lo2] = coordsCliente;
+      const resp = await fetch(`https://router.project-osrm.org/route/v1/driving/${lo1},${la1};${lo2},${la2}?overview=full&geometries=geojson`);
+      const dRuta = await resp.json();
+      document.getElementById('mapa-loading').style.display = 'none';
+      if (dRuta.routes?.[0]) {
+        const ruta = dRuta.routes[0];
+        L.geoJSON(ruta.geometry, { style: { color:'#1D9E75', weight:4, opacity:.8, dashArray:'8,4' } }).addTo(mapaInstance);
+        mapaInstance.fitBounds(L.latLngBounds([coordsT, coordsCliente]), { padding:[40,40] });
+        const infoEl = document.getElementById('mapa-ruta-info');
+        infoEl.style.display = 'block';
+        infoEl.innerHTML = `🧭 <strong>Ruta calculada:</strong> 📏 ${(ruta.distance/1000).toFixed(1)} km &nbsp;|&nbsp; ⏱️ ~${Math.round(ruta.duration/60)} min en auto<br><small>Desde tu zona (${zonaT}) hasta ${solicitud.zona}</small>`;
+      }
+    } catch(e) {
+      document.getElementById('mapa-loading').style.display = 'none';
+      const infoEl = document.getElementById('mapa-ruta-info');
+      infoEl.style.display = 'block';
+      infoEl.innerHTML = '⚠️ No se pudo calcular la ruta.';
+    }
+  }
+  setTimeout(() => mapaInstance && mapaInstance.invalidateSize(), 200);
+}
+
+// ─────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────
+(async function init() {
+  if (sesion) {
+    document.getElementById('nav-guest').style.display  = 'none';
+    document.getElementById('nav-auth').style.display   = 'flex';
+    document.querySelectorAll('.private-link').forEach(l => l.style.display = '');
+    document.getElementById('mob-guest-actions').style.display = 'none';
+    document.getElementById('mob-auth-actions').style.display  = 'block';
+    const u  = sesion.usuario || {};
+    const av = document.getElementById('nav-avatar');
+    if (u.foto_url) {
+      av.style.backgroundImage    = `url(${u.foto_url})`;
+      av.style.backgroundSize     = 'cover';
+      av.style.backgroundPosition = 'center';
+      av.textContent = '';
+    } else {
+      av.textContent = ((u.nombre||'U')[0] + (u.apellido ? u.apellido[0] : '')).toUpperCase();
+    }
+    document.getElementById('nav-username').textContent = u.nombre || 'Usuario';
+    document.getElementById('drop-name').textContent    = `${u.nombre||''} ${u.apellido||''}`.trim();
+    document.getElementById('drop-email').textContent   = u.email || '';
+  }
+  await cargarCategorias();
+  await cargarTodas();
+  if (sesion) await cargarMias();
+})();
+
+// ─────────────────────────────────────────────────────
+// CARGA DE DATOS
+// ─────────────────────────────────────────────────────
+async function cargarCategorias() {
+  try {
+    const d = await Solicitudes.categorias();
+    categorias = d.categorias || [];
+    llenarSelectCategorias();
+  } catch(e) { console.warn('Categorías:', e.message); }
+}
+function llenarSelectCategorias() {
+  const sel = document.getElementById('f-categoria');
+  if (sel.options.length > 1) return;
+  sel.innerHTML = '<option value="">Selecciona una categoría</option>' +
+    categorias.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+}
+async function cargarTodas() {
+  try {
+    const d = await Solicitudes.listarAbiertas();
+    todasAbiertas = d.solicitudes || [];
+    if (tabActual === 'todas') render();
+  } catch(e) { console.warn('Todas:', e.message); }
+}
+async function cargarMias() {
+  try {
+    const d   = await Solicitudes.misSolicitudes();
+    const all = d.solicitudes || [];
+    misSols            = all.filter(s => s.cliente_id    === sesion.usuario.id);
+    solsComoTrabajador = all.filter(s => s.trabajador_id === sesion.usuario.id);
+    const counts = { abierta:0, confirmada:0, en_curso:0, finalizado:0, cancelada:0 };
+    all.forEach(s => { if (counts[s.estado] !== undefined) counts[s.estado]++; });
+    document.getElementById('resumen-estados').textContent =
+      `📋 ${counts.abierta} | 🤝 ${counts.confirmada} | ⚙️ ${counts.en_curso} | ✅ ${counts.finalizado} | ❌ ${counts.cancelada}`;
+    if (tabActual === 'mias') render();
+  } catch(e) { console.warn('Mías:', e.message); }
+}
+
+// ─────────────────────────────────────────────────────
+// TABS Y RENDER
+// ─────────────────────────────────────────────────────
+function cambiarTab(tab) {
+  tabActual = tab;
+  document.getElementById('tab-todas').classList.toggle('active', tab === 'todas');
+  document.getElementById('tab-mias').classList.toggle('active',  tab === 'mias');
+  document.getElementById('filtro-mis-solicitudes').style.display = tab === 'mias' ? 'flex' : 'none';
+  render();
+}
+function filtrar() { render(); }
+
+function render() {
+  let lista = [];
+  if (tabActual === 'todas') {
+    lista = todasAbiertas;
+  } else if (sesion) {
+    const rol = document.getElementById('rol-filter')?.value || 'todos';
+    if      (rol === 'cliente')    lista = misSols;
+    else if (rol === 'trabajador') lista = solsComoTrabajador;
+    else {
+      const ids = new Set();
+      lista = [...misSols, ...solsComoTrabajador].filter(s => { if (ids.has(s.id)) return false; ids.add(s.id); return true; });
+    }
+    const est = document.getElementById('estado-filter')?.value;
+    if (est) lista = lista.filter(s => s.estado === est);
+  }
+
+  const q = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const filtradas = lista.filter(s =>
+    !q || s.titulo.toLowerCase().includes(q) || (s.descripcion||'').toLowerCase().includes(q)
+  );
+
+  document.getElementById('sol-count').textContent =
+    `${filtradas.length} solicitud${filtradas.length !== 1 ? 'es' : ''}`;
+
+  const el = document.getElementById('lista-solicitudes');
+  if (!filtradas.length) {
+    el.innerHTML = `<div class="empty">${tabActual==='mias' ? 'No hay solicitudes que coincidan.' : 'No hay solicitudes abiertas.'}</div>`;
+    return;
+  }
+
+  el.innerHTML = filtradas.map(s => {
+    const esMia        = sesion && s.cliente_id    === sesion.usuario.id;
+    const esTrabajador = sesion && s.trabajador_id === sesion.usuario.id;
+    const rolBadge     = esMia && esTrabajador ? '<span class="rol-badge">Cliente y Trabajador</span>'
+                       : esMia                 ? '<span class="rol-badge">Cliente</span>'
+                       : esTrabajador          ? '<span class="rol-badge">Trabajador</span>' : '';
+    const nombrePublicador = `${s.nombre||''} ${s.apellido||''}`.trim();
+    const mostrarRuta  = esTrabajador && ['confirmada','en_curso'].includes(s.estado);
+
+    // ── Botón calificar: visible si finalizado Y el usuario es cliente O trabajador
+    const puedeCalificar = sesion && (esMia || esTrabajador) && s.estado === 'finalizado';
+
+    // ── Estado rechazado visible para el trabajador que fue rechazado
+    // (solsComoTrabajador incluye postulaciones rechazadas si el backend las retorna con estado 'rechazado')
+    const estadoLabel = s.estado === 'rechazado' && esTrabajador
+      ? '<span class="sol-estado e-rechazado">❌ Rechazado</span>'
+      : `<span class="sol-estado e-${s.estado}">${s.estado}</span>`;
+
+    return `
+    <div class="sol-card" data-sol-id="${s.id}">
+      <div class="sol-row">
+        <div style="flex:1;min-width:0;">
+          <div class="sol-titulo">${s.titulo}${tabActual==='mias' ? rolBadge : ''}</div>
+          <div class="sol-desc">${s.descripcion||''}</div>
+          <div class="sol-meta">
+            ${!esMia && nombrePublicador ? `<span>👤 ${nombrePublicador}</span>` : ''}
+            <span>📍 ${s.zona||'Sin zona'}</span>
+            <span>🏷 ${s.categoria_nombre||'General'}</span>
+            ${s.presupuesto ? `<span>💰 $${s.presupuesto}</span>` : ''}
+            ${s.urgencia==='urgente' ? '<span style="color:#EF4444;font-weight:700;">⚡ Urgente</span>' : ''}
+            <span>🕐 ${new Date(s.createdat).toLocaleDateString('es')}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+          ${estadoLabel}
+          <button class="btn btn-outline" onclick="verDetalle(${s.id})" title="Ver Detalles">👁️</button>
+          <button class="btn btn-map" onclick='abrirMapa(${JSON.stringify(s).replace(/'/g,"&#39;")})' title="Ver en mapa">
+            🗺️ ${mostrarRuta ? 'Ver ruta' : 'Ver zona'}
+          </button>
+          ${esMia && s.estado==='abierta' ? `
+            <button class="btn btn-outline" onclick="editarSolicitud(${s.id})">✏️</button>
+            <button class="btn btn-danger"  onclick="eliminarSolicitud(${s.id})">🗑️</button>
+            <button class="btn btn-outline" onclick="verPostulantes(${s.id})">👥</button>
+          ` : ''}
+          ${!esMia && sesion && s.estado==='abierta' ? `
+            <button class="btn btn-primary" onclick="abrirPostular(${s.id})">Postularme</button>
+          ` : ''}
+          ${esTrabajador && s.estado==='confirmada' ? `
+            <button class="btn btn-primary" onclick="cambiarEstado(${s.id},'iniciar')">▶ Iniciar</button>
+          ` : ''}
+          ${esTrabajador && s.estado==='en_curso' ? `
+            <button class="btn btn-warning" onclick="confirmarFinalizar(${s.id},'trabajador')">✔ Finalizar</button>
+          ` : ''}
+          ${esMia && s.estado==='en_curso' ? `
+            <button class="btn btn-warning" onclick="confirmarFinalizar(${s.id},'cliente')">✔ Finalizar</button>
+          ` : ''}
+          ${puedeCalificar ? `
+            <button class="btn btn-primary" onclick="abrirCalificar(${s.id})">⭐ Calificar</button>
+          ` : ''}
+          ${sesion && !esMia ? `
+            <button class="btn btn-report" onclick="abrirReporte('cliente',${s.cliente_id},'${nombrePublicador.replace(/'/g,"\\'")}')">⚠️ Reportar cliente</button>
+          ` : ''}
+          ${sesion && !esTrabajador && s.trabajador_id ? `
+            <button class="btn btn-report" onclick="abrirReporte('trabajador',${s.trabajador_id},'trabajador')">⚠️ Reportar trabajador</button>
+          ` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────
+// VER DETALLE
+// ─────────────────────────────────────────────────────
+async function verDetalle(id) {
+  document.getElementById('modalDetalle').style.display = 'flex';
+  document.getElementById('detalle-content').innerHTML  = 'Cargando detalles...';
+  try {
+    const d  = await Solicitudes.detalle(id);
+    const s  = d.solicitud;
+    const mp = d.miPostulacion;
+    const esMia        = sesion && s.cliente_id    === sesion.usuario.id;
+    const esTrabajador = sesion && s.trabajador_id === sesion.usuario.id;
+    const puedeCalificar = sesion && (esMia || esTrabajador) && s.estado === 'finalizado';
+
+    let html = `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:20px;font-weight:800;margin-bottom:6px;">${s.titulo}</div>
+        <span class="sol-estado e-${s.estado}">${s.estado.toUpperCase()}</span>
+        ${esTrabajador && s.estado === 'rechazado' ? '<span class="sol-estado e-rechazado" style="margin-left:6px;">Tu postulación fue rechazada</span>' : ''}
+      </div>
+      <p style="font-size:14px;color:#374151;line-height:1.5;">${s.descripcion||'Sin descripción.'}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;font-size:13px;background:#F9FAFB;padding:16px;border-radius:8px;">
+        <div><strong>Publicado por:</strong> ${s.nombre||''} ${s.apellido||''}</div>
+        <div><strong>Categoría:</strong> ${s.categoria_nombre||'General'}</div>
+        <div><strong>Zona:</strong> ${s.zona||'No especificada'}</div>
+        <div><strong>Presupuesto:</strong> ${s.presupuesto ? '$'+s.presupuesto : 'A convenir'}</div>
+        <div><strong>Urgencia:</strong> <span style="${s.urgencia==='urgente'?'color:#EF4444;font-weight:bold;':''}">${s.urgencia||'normal'}</span></div>
+        <div><strong>Fecha ideal:</strong> ${s.fecha_preferida ? new Date(s.fecha_preferida).toLocaleDateString('es') : 'Flexible'}</div>
+      </div>`;
+
+    html += `<div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid #E5E7EB;padding-top:16px;">`;
+    html += `<button class="btn btn-map" onclick='cerrarModal("modalDetalle");abrirMapa(${JSON.stringify(s).replace(/'/g,"&#39;")})'>🗺️ Ver en mapa</button>`;
+
+    if (!esMia && sesion && s.estado === 'abierta') {
+      if (!mp || mp.estado === 'cancelado') {
+        html += `<button class="btn btn-primary" onclick="cerrarModal('modalDetalle');abrirPostular(${s.id})">Postularme</button>`;
+      } else if (mp.estado === 'pendiente') {
+        html += `<span class="sol-estado e-abierta">Postulación pendiente</span>
+                 <button class="btn btn-danger" onclick="cancelarMiPostulacion(${s.id})">Retirar postulación</button>`;
+      } else if (mp.estado === 'rechazado') {
+        html += `<span class="sol-estado e-cancelada">❌ Tu postulación fue rechazada</span>
+                 <button class="btn btn-primary" onclick="cerrarModal('modalDetalle');abrirPostular(${s.id})">Volver a postularme</button>`;
+      } else if (mp.estado === 'aceptado') {
+        html += `<span class="sol-estado e-confirmada">✅ Fuiste seleccionado</span>`;
+      }
+    }
+    if (esMia && s.estado === 'abierta')
+      html += `<button class="btn btn-outline" onclick="cerrarModal('modalDetalle');verPostulantes(${s.id})">Ver postulantes</button>`;
+    if (esTrabajador && s.estado === 'confirmada')
+      html += `<button class="btn btn-primary" onclick="cerrarModal('modalDetalle');cambiarEstado(${s.id},'iniciar')">▶ Iniciar trabajo</button>`;
+    if (esTrabajador && s.estado === 'en_curso')
+      html += `<button class="btn btn-warning" onclick="cerrarModal('modalDetalle');confirmarFinalizar(${s.id},'trabajador')">✔ Finalizar trabajo</button>`;
+    if (esMia && s.estado === 'en_curso')
+      html += `<button class="btn btn-warning" onclick="cerrarModal('modalDetalle');confirmarFinalizar(${s.id},'cliente')">✔ Finalizar servicio</button>`;
+    if (puedeCalificar)
+      html += `<button class="btn btn-primary" onclick="cerrarModal('modalDetalle');abrirCalificar(${s.id})">⭐ Calificar</button>`;
+    if (sesion && !esMia && s.cliente_id)
+      html += `<button class="btn btn-report" onclick="cerrarModal('modalDetalle');abrirReporte('cliente',${s.cliente_id},'${(s.nombre||'').replace(/'/g,"\\'")}')">⚠️ Reportar cliente</button>`;
+    if (sesion && !esTrabajador && s.trabajador_id)
+      html += `<button class="btn btn-report" onclick="cerrarModal('modalDetalle');abrirReporte('trabajador',${s.trabajador_id},'trabajador')">⚠️ Reportar trabajador</button>`;
+    html += `</div>`;
+    document.getElementById('detalle-content').innerHTML = html;
+  } catch(e) {
+    document.getElementById('detalle-content').innerHTML = `<div style="color:#EF4444;">Error al cargar: ${e.message}</div>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────
+// FORMULARIO SOLICITUD
+// ─────────────────────────────────────────────────────
+function abrirFormulario(editId = null) {
+  solicitudEditando = editId;
+  document.getElementById('modal-form-title').textContent = editId ? 'Editar Solicitud' : 'Nueva Solicitud';
+  document.getElementById('btn-guardar').textContent      = editId ? 'Guardar Cambios'  : 'Publicar solicitud';
+  ['f-titulo','f-descripcion'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-categoria').value   = '';
+  document.getElementById('f-urgencia').value    = 'normal';
+  document.getElementById('f-presupuesto').value = '';
+  document.getElementById('f-fecha').value       = '';
+  document.getElementById('f-zona').value        = '';
+  document.getElementById('alert-form').style.display = 'none';
+  if (editId) {
+    const s = [...todasAbiertas, ...misSols, ...solsComoTrabajador].find(s => s.id === editId);
+    if (s) {
+      document.getElementById('f-titulo').value      = s.titulo     || '';
+      document.getElementById('f-categoria').value   = s.categoria_id || '';
+      document.getElementById('f-urgencia').value    = s.urgencia   || 'normal';
+      document.getElementById('f-presupuesto').value = s.presupuesto || '';
+      document.getElementById('f-fecha').value       = s.fecha_preferida ? s.fecha_preferida.split('T')[0] : '';
+      document.getElementById('f-zona').value        = s.zona       || '';
+      document.getElementById('f-descripcion').value = s.descripcion || '';
+    }
+  }
+  document.getElementById('modalForm').style.display = 'flex';
+}
+
+async function guardarSolicitud() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if (!titulo) return showAlert('El título es obligatorio.', 'error', 'alert-form');
+  const zona = document.getElementById('f-zona').value;
+  if (!zona)  return showAlert('Selecciona una zona.', 'error', 'alert-form');
+  const presupuesto = document.getElementById('f-presupuesto').value;
+  if (presupuesto !== '' && parseFloat(presupuesto) < 0)
+    return showAlert('El presupuesto no puede ser negativo.', 'error', 'alert-form');
+  const body = {
+    titulo,
+    categoria_id:    document.getElementById('f-categoria').value || null,
+    urgencia:        document.getElementById('f-urgencia').value   || 'normal',
+    presupuesto:     presupuesto || null,
+    fecha_preferida: document.getElementById('f-fecha').value || null,
+    zona,
+    descripcion:     document.getElementById('f-descripcion').value.trim()
+  };
+  try {
+    if (solicitudEditando) { await Solicitudes.editar(solicitudEditando, body); mostrarToast('✅ Solicitud actualizada.'); }
+    else                   { await Solicitudes.crear(body);                     mostrarToast('✅ Solicitud publicada.'); }
+    cerrarModal('modalForm');
+    await cargarTodas();
+    if (sesion) await cargarMias();
+  } catch(e) { showAlert(e.message, 'error', 'alert-form'); }
+}
+
+// ─────────────────────────────────────────────────────
+// CONFIRMAR ACCIÓN
+// ─────────────────────────────────────────────────────
+function confirmarAccion(mensaje, cb, texto = 'Confirmar') {
+  document.getElementById('confirm-mensaje').textContent = mensaje;
+  const btn    = document.getElementById('confirm-aceptar');
+  btn.textContent = texto;
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener('click', async () => { cerrarModal('modalConfirm'); if (cb) await cb(); });
+  document.getElementById('modalConfirm').style.display = 'flex';
+}
+
+async function eliminarSolicitud(id) {
+  confirmarAccion('¿Eliminar definitivamente esta solicitud?', async () => {
+    try {
+      await Solicitudes.eliminar(id);
+      mostrarToast('🗑️ Solicitud eliminada.');
+      await cargarMias(); await cargarTodas();
+    } catch(e) { showAlert(e.message, 'error'); }
+  }, 'Eliminar');
+}
+
+function editarSolicitud(id) { abrirFormulario(id); }
+
+// ─────────────────────────────────────────────────────
+// POSTULACIONES
+// ─────────────────────────────────────────────────────
+function abrirPostular(id) {
+  if (!sesion) return window.location.href = 'login.html';
+  solicitudPostulandoId = id;
+  ['p-mensaje','p-precio','p-disponibilidad'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('alert-postular').style.display = 'none';
+  document.getElementById('modalPostular').style.display  = 'flex';
+}
+
+async function confirmarPostular() {
+  const mensaje        = document.getElementById('p-mensaje').value.trim();
+  const precio         = document.getElementById('p-precio').value;
+  const disponibilidad = document.getElementById('p-disponibilidad').value.trim();
+  try {
+    await Solicitudes.aplicar(solicitudPostulandoId, { mensaje, precio_oferta: precio||null, disponibilidad: disponibilidad||null });
+    mostrarToast('✅ Postulación enviada.');
+    cerrarModal('modalPostular');
+    await cargarTodas();
+  } catch(e) { showAlert(e.message, 'error', 'alert-postular'); }
+}
+
+async function cancelarMiPostulacion(id) {
+  confirmarAccion('¿Retirar tu postulación?', async () => {
+    try {
+      await Solicitudes.cancelarPostulacion(id);
+      mostrarToast('Postulación retirada.');
+      cerrarModal('modalDetalle');
+      await cargarTodas();
+    } catch(e) { showAlert(e.message, 'error'); }
+  }, 'Sí, retirar');
+}
+
+async function verPostulantes(solicitudId) {
+  window._postulacionesSolicitudId = solicitudId;
+  document.getElementById('modalPostulaciones').style.display = 'flex';
+  document.getElementById('lista-postulantes').innerHTML = 'Cargando...';
+  try {
+    const data = await Solicitudes.verPostulaciones(solicitudId);
+    const pp   = data.postulaciones || [];
+    document.getElementById('lista-postulantes').innerHTML = pp.length
+      ? pp.map(p => `
+        <div class="postulante-card">
+          <div style="flex:1;min-width:0;">
+            <strong>${p.nombre||''} ${p.apellido||''}</strong><br>
+            <small style="color:#6B7280;">${p.mensaje||'Sin presentación'} | 💰 ${p.precio_oferta||'A convenir'} | ⏰ ${p.disponibilidad||'N/D'}</small><br>
+            <span class="sol-estado e-${p.estado==='pendiente'?'abierta':p.estado==='aceptado'?'confirmada':'cancelada'}">${p.estado.toUpperCase()}</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            ${p.estado==='pendiente' ? `
+              <button class="btn btn-primary" onclick="gestionarPostulacion(${p.id},'aceptado')">Aceptar</button>
+              <button class="btn btn-danger"  onclick="gestionarPostulacion(${p.id},'rechazado')">Rechazar</button>
+            ` : ''}
+            <a href="ver-perfil.html?id=${p.trabajador_id}" class="btn btn-outline" style="font-size:12px;">👤 Perfil</a>
+            <button class="btn btn-report" onclick="abrirReporte('trabajador',${p.trabajador_id},'${(p.nombre||'').replace(/'/g,"\\'")}')">⚠️ Reportar</button>
+          </div>
+        </div>`).join('')
+      : '<p style="color:#9CA3AF;text-align:center;padding:20px;">Aún no hay postulantes.</p>';
+  } catch(e) {
+    document.getElementById('lista-postulantes').innerHTML = `<p style="color:#EF4444;">Error: ${e.message}</p>`;
+  }
+}
+
+async function gestionarPostulacion(postulacionId, estado) {
+  try {
+    await Solicitudes.gestionarPostulacion(postulacionId, estado);
+    mostrarToast(`Trabajador ${estado}.`);
+    const solId = window._postulacionesSolicitudId;
+    if (solId) verPostulantes(solId);
+    await cargarTodas();
+    if (sesion) await cargarMias();
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+
+async function cambiarEstado(id, accion) {
+  try {
+    if (accion === 'iniciar') await Solicitudes.iniciarTrabajo(id);
+    mostrarToast('▶ Trabajo iniciado.');
+    await cargarTodas();
+    if (sesion) await cargarMias();
+  } catch(e) { showAlert(e.message, 'error'); }
+}
+
+function confirmarFinalizar(id, rol) {
+  const msg = rol === 'cliente'
+    ? '¿Confirmas que el servicio fue completado satisfactoriamente?'
+    : '¿Confirmas que terminaste el trabajo?';
+  confirmarAccion(msg, async () => {
+    try {
+      const endpoint = rol === 'trabajador'
+        ? `${API_BASE}/solicitudes/${id}/finalizar-trabajo`
+        : `${API_BASE}/solicitudes/${id}/finalizar`;
+      const r    = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${sesion?.token}`, 'Content-Type': 'application/json' }
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || data.message || 'Error al finalizar.');
+      mostrarToast('✅ Servicio finalizado. ¡Ya puedes calificar!');
+      await cargarTodas();
+      if (sesion) await cargarMias();
+    } catch(e) { showAlert(e.message, 'error'); }
+  }, 'Sí, finalizar');
+}
+
+// ─────────────────────────────────────────────────────
+// CALIFICACIONES — flujo mutuo completo
+// ─────────────────────────────────────────────────────
+const CAL_FORM_HTML = `
+  <p style="font-size:13px;color:#6B7280;margin-bottom:12px;" id="cal-subtitulo">¿Cómo fue tu experiencia?</p>
+  <div style="margin-bottom:16px;">
+    <label class="form-label">Puntaje *</label>
+    <div style="display:flex;gap:8px;margin-top:6px;" id="estrellas">
+      <span class="estrella" data-val="1" onclick="seleccionarEstrella(1)">★</span>
+      <span class="estrella" data-val="2" onclick="seleccionarEstrella(2)">★</span>
+      <span class="estrella" data-val="3" onclick="seleccionarEstrella(3)">★</span>
+      <span class="estrella" data-val="4" onclick="seleccionarEstrella(4)">★</span>
+      <span class="estrella" data-val="5" onclick="seleccionarEstrella(5)">★</span>
+    </div>
+    <div id="puntaje-label" style="font-size:12px;color:#6B7280;margin-top:4px;"></div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Reseña (opcional)</label>
+    <textarea id="cal-comentario" class="form-input" rows="3" placeholder="Describe tu experiencia..."></textarea>
+  </div>
+  <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="enviarCalificacion()">Enviar calificación</button>`;
+
+async function abrirCalificar(solicitudId) {
+  if (!sesion) return;
+  calificandoData     = { solicitud_id: solicitudId, calificado_id: null };
+  puntajeSeleccionado = 0;
+  document.getElementById('cal-form-wrap').innerHTML   = CAL_FORM_HTML;
+  document.getElementById('cal-estado-wrap').innerHTML = '';
+  document.getElementById('alert-calificar').style.display = 'none';
+  document.getElementById('modalCalificar').style.display  = 'flex';
+
+  try {
+    const r    = await fetch(`${API_BASE}/calificaciones/estado/${solicitudId}`, {
+      headers: { 'Authorization': `Bearer ${sesion.token}` }
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Error al cargar estado.');
+
+    const esCliente  = data.solicitud.cliente_id === sesion.usuario.id;
+    const otroNombre = esCliente ? 'el trabajador' : 'el cliente';
+
+    document.getElementById('cal-titulo').textContent    = '⭐ Calificar servicio';
+    document.getElementById('cal-subtitulo').textContent = `Califica a ${otroNombre}:`;
+    calificandoData.calificado_id = esCliente
+      ? data.solicitud.trabajador_id
+      : data.solicitud.cliente_id;
+
+    const pct = [data.calificacionCliente, data.calificacionTrabajador].filter(Boolean).length * 50;
+
+    document.getElementById('cal-estado-wrap').innerHTML = `
+      <div>
+        <div style="font-size:12px;color:#6B7280;margin-bottom:4px;">Progreso de calificaciones</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="cal-box ${data.calificacionCliente ? 'cal-box-done' : ''}">
+            <div class="cal-step ${data.calificacionCliente ? 'cal-step-done' : ''}">
+              <span class="cal-step-icon">${data.calificacionCliente ? '✅' : '⏳'}</span>
+              <span>Cliente calificó ${data.calificacionCliente ? '('+data.calificacionCliente.puntaje+'★)' : ''}</span>
+            </div>
+          </div>
+          <div class="cal-box ${data.calificacionTrabajador ? 'cal-box-done' : ''}">
+            <div class="cal-step ${data.calificacionTrabajador ? 'cal-step-done' : ''}">
+              <span class="cal-step-icon">${data.calificacionTrabajador ? '✅' : '⏳'}</span>
+              <span>Trabajador calificó ${data.calificacionTrabajador ? '('+data.calificacionTrabajador.puntaje+'★)' : ''}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // Si ya calificó → ocultar form y mostrar estado
+    if (data.yaCalifico) {
+      document.getElementById('cal-form-wrap').innerHTML = `
+        <div style="text-align:center;padding:20px 0;">
+          <div style="font-size:40px;margin-bottom:8px;">✅</div>
+          <p style="font-weight:600;color:#065F46;">Ya enviaste tu calificación.</p>
+          ${!data.ambosCalificaron
+            ? `<p style="font-size:13px;color:#6B7280;">Esperando que ${otroNombre} también califique...</p>`
+            : `<p style="font-size:13px;color:#065F46;">¡Ambos han calificado! El proceso está completo.</p>`}
+        </div>`;
+    }
+  } catch(e) {
+    document.getElementById('cal-estado-wrap').innerHTML =
+      `<p style="color:#EF4444;font-size:13px;">Error al cargar estado: ${e.message}</p>`;
+  }
+}
+
+function seleccionarEstrella(val) {
+  puntajeSeleccionado = val;
+  const labels = ['','Muy malo','Malo','Regular','Bueno','¡Excelente!'];
+  const lbl = document.getElementById('puntaje-label');
+  if (lbl) lbl.textContent = labels[val] || '';
+  document.querySelectorAll('.estrella').forEach(s => {
+    s.style.color = parseInt(s.dataset.val) <= val ? '#F59E0B' : '#D1D5DB';
+  });
+}
+
+async function enviarCalificacion() {
+  if (!puntajeSeleccionado) return showAlert('Selecciona un puntaje.', 'error', 'alert-calificar');
+  const comentario = document.getElementById('cal-comentario')?.value.trim() || null;
+  try {
+    const r = await fetch(`${API_BASE}/calificaciones`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${sesion.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        solicitud_id:  calificandoData.solicitud_id,
+        calificado_id: calificandoData.calificado_id,
+        puntaje:       puntajeSeleccionado,
+        comentario
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message || data.error || 'Error al calificar.');
+    mostrarToast('⭐ ¡Calificación enviada!');
+    // Recargar el modal para mostrar el nuevo estado
+    await abrirCalificar(calificandoData.solicitud_id);
+    await cargarMias();
+  } catch(e) { showAlert(e.message, 'error', 'alert-calificar'); }
+}
+
+// ─────────────────────────────────────────────────────
+// REPORTES
+// ─────────────────────────────────────────────────────
+function seleccionarMotivo(el, motivo) {
+  document.querySelectorAll('.motivo-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  motivoSeleccionado = motivo;
+}
+
+function abrirReporte(tipo, referenciaId, nombre) {
+  if (!sesion) return window.location.href = 'login.html';
+  reporteData        = { tipo, referencia_id: referenciaId, nombre };
+  motivoSeleccionado = '';
+  document.querySelectorAll('.motivo-opt').forEach(o => o.classList.remove('selected'));
+  document.getElementById('reporte-descripcion').value = '';
+  document.getElementById('alert-reporte').style.display = 'none';
+  document.getElementById('reporte-subtitulo').textContent =
+    `Estás reportando al ${tipo} "${nombre}" (#${referenciaId}). El equipo de OficiosYA revisará tu reporte.`;
+  document.getElementById('modalReporte').style.display = 'flex';
+}
+
+async function enviarReporte() {
+  if (!motivoSeleccionado) return showAlert('Selecciona un motivo.', 'error', 'alert-reporte');
+  const descripcion = document.getElementById('reporte-descripcion').value.trim();
+  try {
+    const r = await fetch(`${API_BASE}/reportes`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${sesion.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tipo:          reporteData.tipo,
+        referencia_id: reporteData.referencia_id,
+        reportado_id:  reporteData.referencia_id,
+        motivo:        motivoSeleccionado,
+        descripcion:   descripcion || motivoSeleccionado
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message || data.error || 'Error al enviar.');
+    cerrarModal('modalReporte');
+    mostrarToast('✅ Reporte enviado. El equipo lo revisará.');
+  } catch(e) { showAlert(e.message, 'error', 'alert-reporte'); }
+}
+
+// ─────────────────────────────────────────────────────
+// MODALES
+// ─────────────────────────────────────────────────────
+function cerrarModal(id) {
+  document.getElementById(id).style.display = 'none';
+  if (id === 'modalMapa' && mapaInstance) { mapaInstance.remove(); mapaInstance = null; }
+}
+</script>
+
+<script>
+const _session = getSession();
+const _token   = _session?.token;
+const _API     = 'http://localhost:3000/api';
+let   _notifs  = [];
+
+async function cargarNotificaciones() {
+  if (!_token) return;
+  try {
+    const r    = await fetch(`${_API}/notificaciones`, { headers: { 'Authorization': `Bearer ${_token}` } });
+    const data = await r.json();
+    _notifs    = data.notificaciones || [];
+    renderNotificaciones();
+  } catch(e) {}
+}
+
+function renderNotificaciones() {
+  const noLeidas = _notifs.filter(n => !n.leida).length;
+  const badge    = document.getElementById('notif-badge');
+  if (badge) { badge.textContent = noLeidas > 9 ? '9+' : noLeidas; badge.style.display = noLeidas > 0 ? 'block' : 'none'; }
+  const body = document.getElementById('notif-body');
+  if (!body) return;
+  if (!_notifs.length) {
+    body.innerHTML = '<div style="padding:32px 16px;text-align:center;color:#9CA3AF;font-size:13px;">No tienes notificaciones.</div>';
+    return;
+  }
+  const icons = { advertencia:'⚠️', verificacion:'🔔', mensaje:'💬', solicitud:'📋', calificacion:'⭐', default:'🔔' };
+  body.innerHTML = _notifs.slice(0, 10).map(n => {
+    // Construir link de destino según tipo de notificación
+    let href = '#';
+    if (n.tipo === 'mensaje')     href = 'chat.html';
+    if (n.tipo === 'solicitud')   href = 'solicitudes.html';
+    if (n.tipo === 'calificacion') href = 'solicitudes.html';
+    return `
+    <a href="${href}" onclick="marcarLeida(${n.id})" style="display:flex;gap:12px;padding:13px 16px;border-bottom:1px solid #F3F4F6;cursor:pointer;background:${n.leida?'#fff':'#F0FDF4'};${!n.leida?'border-left:3px solid #1D9E75;':''}text-decoration:none;color:inherit;">
+      <span style="font-size:20px;">${icons[n.tipo]||icons.default}</span>
+      <div>
+        <p style="margin:0 0 3px;font-size:13px;color:#374151;"><strong>${n.titulo}</strong><br>${n.mensaje||''}</p>
+        <span style="font-size:11px;color:#9CA3AF;">${tiempoRelativo(n.createdat)}</span>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function tiempoRelativo(fecha) {
+  const diff = Date.now() - new Date(fecha).getTime();
+  const min  = Math.floor(diff / 60000);
+  if (min < 1)    return 'Ahora mismo';
+  if (min < 60)   return `Hace ${min} min`;
+  if (min < 1440) return `Hace ${Math.floor(min/60)} h`;
+  return `Hace ${Math.floor(min/1440)} día(s)`;
+}
+
+async function marcarLeida(id) {
+  await fetch(`${_API}/notificaciones/${id}/leer`, { method:'PUT', headers:{ 'Authorization':`Bearer ${_token}` } });
+  const n = _notifs.find(n => n.id === id);
+  if (n) n.leida = true;
+  renderNotificaciones();
+}
+
+async function marcarTodasLeidas(event) {
+  if (event) event.stopPropagation();
+  await fetch(`${_API}/notificaciones/leer-todas`, { method:'PUT', headers:{ 'Authorization':`Bearer ${_token}` } });
+  _notifs.forEach(n => n.leida = true);
+  renderNotificaciones();
+}
+
+function toggleNotificaciones(event) {
+  if (event) event.stopPropagation();
+  const n      = document.getElementById('notifDropdown');
+  const abriendo = n.style.display === 'none';
+  n.style.display = abriendo ? 'block' : 'none';
+  if (abriendo) cargarNotificaciones();
+}
+
+if (_session) { cargarNotificaciones(); setInterval(cargarNotificaciones, 30000); }
+</script>
+</body>
+</html>
