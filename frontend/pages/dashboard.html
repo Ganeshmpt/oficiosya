@@ -719,7 +719,13 @@ document.addEventListener('click', function(e) {
 
 // ── ESTADÍSTICAS ──────────────────────────────────────
 async function cargarStats() {
-  try { _stats = await Stats.misStats(); } catch(e) { _stats = null; }
+  try { 
+    _stats = await Stats.misStats(); 
+  } catch(e) { 
+    _stats = null;
+    document.getElementById('stats-row').innerHTML = 
+      `<div style="color:red;font-size:11px;padding:8px;">Stats error: ${e.message}</div>`;
+  }
   renderStats();
 }
 
@@ -849,10 +855,10 @@ async function cargarMisSolicitudes() {
         ${s.estado==='abierta'?`<button class="btn-cancel-sol" onclick="cancelarSolicitud(${s.id})">Cancelar</button>`:''}
       </div>`).join('');
   } catch(e) {
-    document.getElementById('mis-solicitudes-lista').innerHTML = '<div class="empty-panel">Error al cargar.</div>';
+    document.getElementById('mis-solicitudes-lista').innerHTML = 
+      `<div class="empty-panel" style="color:red;font-size:11px;">Error: ${e.message}</div>`;
   }
 }
-
 // ── PANEL TRABAJADOR ──────────────────────────────────
 async function cargarPanelTrabajador() {
   cargarSolicitudesDisponibles();
