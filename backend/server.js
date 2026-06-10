@@ -6,16 +6,26 @@ const { Server } = require('socket.io');
 
 const app    = express();
 const server = http.createServer(app);
-const io     = new Server(server, {
+
+// FIX: trust proxy para Render + rate limit
+app.set('trust proxy', 1);
+
+const io = new Server(server, {
   cors: { origin: '*', methods: ['GET','POST'] }
 });
 
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'https://ganeshmpt.github.io'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 // Pasar io a las rutas que lo necesiten
 app.set('io', io);
 
