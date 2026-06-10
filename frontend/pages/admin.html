@@ -47,8 +47,6 @@
     .empty-table { text-align: center; padding: 40px; color: #9CA3AF; font-style: italic; }
     .btn-action { padding: 6px 10px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-right: 4px; margin-bottom: 2px; }
     .btn-action:hover { opacity: 0.8; }
-
-    /* TARJETAS DE VERIFICACIÓN */
     .verif-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
     .verif-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .verif-card.pendiente { border-left: 4px solid #F59E0B; }
@@ -62,12 +60,9 @@
     .verif-fecha  { font-size: 11px; color: #9CA3AF; margin-bottom: 10px; }
     .verif-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .verif-motivo { font-size: 11px; color: #EF4444; margin-top: 6px; font-style: italic; }
-
-    /* FILTRO VERIFICACIONES */
     .verif-filter { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
     .verif-filter button { padding: 6px 14px; border-radius: 999px; border: 1.5px solid #E5E7EB; font-size: 12px; font-weight: 600; cursor: pointer; background: #fff; color: #6B7280; transition: all .15s; font-family: inherit; }
     .verif-filter button.active { background: #1D9E75; color: #fff; border-color: #1D9E75; }
-
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(17,24,39,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
     .modal-content { background: #fff; padding: 32px; border-radius: 16px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: modalIn 0.3s ease-out forwards; }
     @keyframes modalIn { from { opacity:0; transform:translateY(20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
@@ -92,16 +87,12 @@
     .detalle-row { display: flex; gap: 8px; margin-bottom: 12px; font-size: 14px; }
     .detalle-label { font-weight: 600; color: #374151; min-width: 110px; }
     .detalle-valor { color: #6B7280; }
-
-    /* MODAL IMAGEN AMPLIADA */
     .img-modal { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 2000; cursor: zoom-out; }
     .img-modal img { max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
-
     .toast { position: fixed; top: 20px; right: 20px; padding: 14px 20px; border-radius: 10px; font-weight: 600; font-size: 14px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,.15); animation: slideIn .3s ease; }
     .toast-success { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
     .toast-error   { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
     @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
-
     .tabs { display: flex; gap: 4px; background: #F3F4F6; border-radius: 10px; padding: 4px; margin-bottom: 20px; width: fit-content; flex-wrap: wrap; }
     .tab-btn { padding: 8px 18px; border-radius: 7px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; color: #6B7280; background: transparent; font-family: inherit; transition: all .15s; position: relative; }
     .tab-btn.active { background: #fff; color: #1D9E75; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
@@ -139,7 +130,6 @@
     </header>
 
     <div class="content-scroll">
-
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-num" id="s-usuarios">—</div><div class="stat-lbl">Usuarios registrados</div></div>
         <div class="stat-card"><div class="stat-num" id="s-solicitudes">—</div><div class="stat-lbl">Solicitudes activas</div></div>
@@ -156,21 +146,17 @@
         </button>
         <button class="tab-btn" onclick="switchTab('solicitudes')">📋 Solicitudes</button>
         <button class="tab-btn" onclick="switchTab('reportes')">
-  ⚠️ Reportes
-  <span class="tab-badge" id="rep-tab-badge" style="display:none;">0</span>
-</button>
+          ⚠️ Reportes
+          <span class="tab-badge" id="rep-tab-badge" style="display:none;">0</span>
+        </button>
       </div>
 
       <div id="tab-usuarios" class="tab-content active">
         <div class="panel-card">
-          <div class="panel-header">
-            <h2 class="panel-title">👥 Gestión de Usuarios</h2>
-          </div>
+          <div class="panel-header"><h2 class="panel-title">👥 Gestión de Usuarios</h2></div>
           <div style="overflow-x:auto;">
             <table>
-              <thead>
-                <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Verificado</th><th>Acciones</th></tr>
-              </thead>
+              <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Verificado</th><th>Acciones</th></tr></thead>
               <tbody id="tabla-usuarios"><tr><td colspan="7" class="empty-table">Cargando...</td></tr></tbody>
             </table>
           </div>
@@ -197,9 +183,7 @@
 
       <div id="tab-solicitudes" class="tab-content">
         <div class="panel-card">
-          <div class="panel-header">
-            <h2 class="panel-title">📋 Solicitudes recientes</h2>
-          </div>
+          <div class="panel-header"><h2 class="panel-title">📋 Solicitudes recientes</h2></div>
           <div style="overflow-x:auto;">
             <table>
               <thead><tr><th>ID</th><th>Título</th><th>Cliente</th><th>Categoría</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -211,20 +195,15 @@
 
       <div id="tab-reportes" class="tab-content">
         <div class="panel-card">
-          <div class="panel-header">
-            <h2 class="panel-title">⚠️ Reportes recibidos</h2>
-          </div>
+          <div class="panel-header"><h2 class="panel-title">⚠️ Reportes recibidos</h2></div>
           <div style="overflow-x:auto;">
             <table>
-              <thead>
-                <tr><th>ID</th><th>Reportador</th><th>Reportado</th><th>Tipo</th><th>Motivo</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr>
-              </thead>
+              <thead><tr><th>ID</th><th>Reportador</th><th>Reportado</th><th>Tipo</th><th>Motivo</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
               <tbody id="tabla-reportes"><tr><td colspan="8" class="empty-table">Cargando...</td></tr></tbody>
             </table>
           </div>
         </div>
       </div>
-
     </div>
   </main>
 </div>
@@ -275,12 +254,27 @@
 <div id="reporteModal" class="modal-overlay" onclick="if(event.target===this)cerrarModalReporte()">
   <div class="modal-content">
     <div class="modal-icon">⚠️</div>
-    <h3 class="modal-title">Generar Reporte</h3>
+    <h3 class="modal-title">Reportar y Cancelar Solicitud</h3>
     <p class="modal-text" id="reporteTexto">Escribe el motivo del reporte:</p>
-    <textarea id="reporteMotivoInput" class="modal-textarea" rows="4" placeholder="Detalla el motivo aquí..."></textarea>
+    <textarea id="reporteMotivoInput" class="modal-textarea" rows="4" placeholder="Ej: Contenido inapropiado, spam, fraude..."></textarea>
     <div class="modal-actions">
       <button class="btn-modal btn-cancel" onclick="cerrarModalReporte()">Cancelar</button>
-      <button class="btn-modal" style="background:#F59E0B;color:#fff;" onclick="ejecutarReporte()">Enviar Reporte</button>
+      <button class="btn-modal btn-confirm-rojo" onclick="ejecutarReporte()">⚠️ Reportar y cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal detalle solicitud -->
+<div id="detalleSolicitudModal" class="modal-overlay" onclick="if(event.target===this)cerrarDetalleSolicitud()">
+  <div class="modal-content-wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="margin:0;font-size:18px;font-weight:700;color:#111827;">📋 Detalle de Solicitud</h3>
+      <button onclick="cerrarDetalleSolicitud()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9CA3AF;">✕</button>
+    </div>
+    <div id="detalle-solicitud-contenido"></div>
+    <div style="display:flex;gap:12px;margin-top:24px;">
+      <button id="btn-reportar-solicitud" class="btn-modal btn-confirm-rojo">⚠️ Reportar y cancelar</button>
+      <button onclick="cerrarDetalleSolicitud()" class="btn-modal btn-cancel">Cerrar</button>
     </div>
   </div>
 </div>
@@ -322,7 +316,7 @@ if (!session || !session.usuario?.is_admin) window.location.href = 'login.html';
 
 const TOKEN   = session.token;
 const HEADERS = { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
-const BASE = 'https://oficiosya-backend.onrender.com/api';
+const BASE    = 'https://oficiosya-backend.onrender.com/api';
 
 let _verificaciones  = [];
 let _filtroVerif     = 'todos';
@@ -337,7 +331,7 @@ let _verifIdRechazar = null;
     document.getElementById('nav-avatar').textContent = ini;
 
     const [solRes, usrRes, repRes, verifRes] = await Promise.all([
-     fetch(`${BASE}/solicitudes/abiertas`),
+      fetch(`${BASE}/solicitudes/abiertas`),
       fetch(`${BASE}/admin/usuarios`,       { headers: HEADERS }),
       fetch(`${BASE}/reportes`,             { headers: HEADERS }),
       fetch(`${BASE}/admin/verificaciones`, { headers: HEADERS }),
@@ -373,7 +367,6 @@ let _verifIdRechazar = null;
       if (badgeRep) { badgeRep.textContent = reportesPendientes; badgeRep.style.display = 'inline-block'; }
     }
 
-    // Restaurar tab activo tras recarga
     const tabGuardado = sessionStorage.getItem('admin_tab');
     if (tabGuardado) switchTab(tabGuardado);
 
@@ -401,9 +394,7 @@ let _verifIdRechazar = null;
             <td>${verificadoBadge}</td>
             <td>
               <button onclick="toggleBloqueo(${u.id}, ${bloqueado})" class="btn-action" style="${btnColor}">${btnText}</button>
-              ${!u.verificado
-                ? `<button onclick="abrirVerificarModal(${u.id}, '${nombreSeguro}')" class="btn-action" style="background:#DBEAFE;color:#1E40AF;">✔️ Verificar</button>`
-                : ''}
+              ${!u.verificado ? `<button onclick="abrirVerificarModal(${u.id}, '${nombreSeguro}')" class="btn-action" style="background:#DBEAFE;color:#1E40AF;">✔️ Verificar</button>` : ''}
               <button onclick="abrirAdvertenciaModal(${u.id}, '${nombreSeguro}')" class="btn-action" style="background:#FEF3C7;color:#92400E;">⚠️ Advertir</button>
             </td>
           </tr>`;
@@ -419,7 +410,7 @@ let _verifIdRechazar = null;
           <td>${s.categoria_nombre || 'General'}</td>
           <td><span class="badge b-activo">${s.estado}</span></td>
           <td>
-            <button onclick="abrirReporte(${s.id}, 'solicitud', ${s.usuario_id || s.cliente_id || s.id})" class="btn-action" style="background:#FEF08A;color:#854D0E;">⚠️ Reportar</button>
+            <button onclick="verSolicitud(${JSON.stringify(s).replace(/"/g,'&quot;')})" class="btn-action" style="background:#EDE9FE;color:#4C1D95;">👁 Ver</button>
           </td>
         </tr>`).join('')
       : '<tr><td colspan="6" class="empty-table">No hay solicitudes.</td></tr>';
@@ -428,7 +419,6 @@ let _verifIdRechazar = null;
     document.getElementById('tabla-reportes').innerHTML = reportes.length
       ? reportes.map(r => {
           const estadoClass = r.estado === 'pendiente' ? 'b-pendiente' : r.estado === 'resuelto' ? 'b-resuelto' : 'b-rechazado';
-          // FIX: usar createdat en lugar de createdat
           const fecha = r.createdat ? new Date(r.createdat).toLocaleDateString('es') : '—';
           return `<tr>
             <td>#${r.id}</td>
@@ -455,6 +445,34 @@ let _verifIdRechazar = null;
   }
 })();
 
+// ── VER DETALLE SOLICITUD ─────────────────────────────
+let _solicitudActual = null;
+function verSolicitud(s) {
+  _solicitudActual = s;
+  document.getElementById('detalle-solicitud-contenido').innerHTML = `
+    <div class="detalle-row"><span class="detalle-label">Título:</span><span class="detalle-valor"><strong>${s.titulo}</strong></span></div>
+    <div class="detalle-row"><span class="detalle-label">Cliente:</span><span class="detalle-valor">${s.nombre || ''} ${s.apellido || ''}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Categoría:</span><span class="detalle-valor">${s.categoria_nombre || 'General'}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Zona:</span><span class="detalle-valor">${s.zona || '—'}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Presupuesto:</span><span class="detalle-valor">${s.presupuesto ? '$' + s.presupuesto : '—'}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Urgencia:</span><span class="detalle-valor">${s.urgencia || 'normal'}</span></div>
+    <div class="detalle-row"><span class="detalle-label">Estado:</span><span class="badge b-activo">${s.estado}</span></div>
+    <div style="margin-top:12px;">
+      <p style="font-weight:600;color:#374151;margin-bottom:6px;font-size:14px;">Descripción:</p>
+      <p style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:12px;font-size:14px;color:#6B7280;margin:0;">${s.descripcion || 'Sin descripción.'}</p>
+    </div>
+  `;
+  document.getElementById('btn-reportar-solicitud').onclick = () => {
+    cerrarDetalleSolicitud();
+    abrirReporte(s.id, 'solicitud', s.cliente_id || s.usuario_id || s.id);
+  };
+  document.getElementById('detalleSolicitudModal').style.display = 'flex';
+}
+function cerrarDetalleSolicitud() {
+  document.getElementById('detalleSolicitudModal').style.display = 'none';
+  _solicitudActual = null;
+}
+
 // ── VERIFICACIONES — RENDER ───────────────────────────
 function renderVerificaciones() {
   const grid  = document.getElementById('verif-grid');
@@ -463,15 +481,12 @@ function renderVerificaciones() {
     : _verificaciones.filter(v => v.estado === _filtroVerif);
 
   if (!lista.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9CA3AF;">
-      No hay documentos ${_filtroVerif === 'todos' ? '' : `con estado "${_filtroVerif}"`}.
-    </div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9CA3AF;">No hay documentos${_filtroVerif === 'todos' ? '' : ` con estado "${_filtroVerif}"`}.</div>`;
     return;
   }
 
   grid.innerHTML = lista.map(v => {
     const isPdf = v.doc_url?.toLowerCase().includes('.pdf');
-    // FIX: usar createdat en lugar de createdat
     const fechaVerif = v.createdat
       ? new Date(v.createdat).toLocaleDateString('es', { day:'numeric', month:'short', year:'numeric' })
       : '—';
@@ -493,7 +508,7 @@ function renderVerificaciones() {
         ${v.estado === 'pendiente' ? `
           <div class="verif-actions" style="margin-top:10px;">
             <button onclick="aprobarDoc(${v.id}, ${v.usuario_id})" class="btn-action" style="background:#D1FAE5;color:#065F46;flex:1;">✅ Aprobar</button>
-            <button onclick="abrirRechazarDoc(${v.id})"           class="btn-action" style="background:#FEE2E2;color:#991B1B;flex:1;">❌ Rechazar</button>
+            <button onclick="abrirRechazarDoc(${v.id})"            class="btn-action" style="background:#FEE2E2;color:#991B1B;flex:1;">❌ Rechazar</button>
           </div>` : ''}
         ${isPdf ? `<a href="${v.doc_url}" target="_blank" style="font-size:12px;color:#1D9E75;display:block;margin-top:8px;">Ver PDF ↗</a>` : ''}
       </div>
@@ -569,7 +584,6 @@ async function ejecutarRechazo() {
 
 // ── ADVERTENCIA ───────────────────────────────────────
 let advertenciaUsuarioId = null;
-
 function abrirAdvertenciaModal(id, nombre) {
   advertenciaUsuarioId = id;
   document.getElementById('advertencia-texto').textContent = `Advertencia para: ${nombre}`;
@@ -667,7 +681,7 @@ async function ejecutarVerificacion() {
 let reporteData = { id: null, tipo: null, reportado_id: null };
 function abrirReporte(id, tipo, reportadoId) {
   reporteData = { id, tipo, reportado_id: reportadoId };
-  document.getElementById('reporteTexto').textContent = `Escribe el motivo del reporte para ${tipo === 'solicitud' ? 'la' : 'el'} ${tipo} #${id}:`;
+  document.getElementById('reporteTexto').textContent = `Escribe el motivo para reportar y cancelar la solicitud #${id}:`;
   document.getElementById('reporteMotivoInput').value = '';
   document.getElementById('reporteModal').style.display = 'flex';
 }
@@ -682,15 +696,14 @@ async function ejecutarReporte() {
     });
     const data = await r.json();
     cerrarModalReporte();
-    if (data.success) { mostrarToast('Reporte enviado.', 'success'); setTimeout(() => window.location.reload(), 1000); }
+    if (data.success) { mostrarToast('Reporte enviado. La solicitud fue cancelada.', 'success'); setTimeout(() => window.location.reload(), 1500); }
     else { mostrarToast('Error: ' + (data.message || data.error), 'error'); }
   } catch(e) { mostrarToast('Error de conexión.', 'error'); }
 }
 
 // ── DETALLE REPORTE ───────────────────────────────────
 function verDetalleReporte(r) {
-  const estadoClass = r.estado === 'pendiente' ? 'b-pendiente' : r.estado === 'resuelto' ? 'b-resuelto' : 'b-rechazado';
-  // FIX: usar createdat en lugar de createdat
+  const estadoClass  = r.estado === 'pendiente' ? 'b-pendiente' : r.estado === 'resuelto' ? 'b-resuelto' : 'b-rechazado';
   const fechaDetalle = r.createdat ? new Date(r.createdat).toLocaleString('es') : '—';
   document.getElementById('detalle-reporte-contenido').innerHTML = `
     <div class="detalle-row"><span class="detalle-label">Reportador:</span><span class="detalle-valor">${r.reportador_nombre || '—'} (${r.reportador_email || '—'})</span></div>
@@ -705,7 +718,7 @@ function verDetalleReporte(r) {
     ${r.accion_tomada ? `<div style="margin-top:12px;"><p style="font-weight:600;color:#374151;margin-bottom:6px;font-size:14px;">Acción tomada:</p><p style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:12px;font-size:14px;color:#166534;margin:0;">${r.accion_tomada}</p></div>` : ''}
   `;
   document.getElementById('detalle-acciones').innerHTML = r.estado === 'pendiente' ? `
-    <button onclick="gestionarReporte(${r.id},'resuelto');cerrarDetalleReporte();" class="btn-modal btn-confirm-verde">✅ Marcar resuelto</button>
+    <button onclick="gestionarReporte(${r.id},'resuelto');cerrarDetalleReporte();"  class="btn-modal btn-confirm-verde">✅ Marcar resuelto</button>
     <button onclick="gestionarReporte(${r.id},'rechazado');cerrarDetalleReporte();" class="btn-modal btn-confirm-rojo">❌ Rechazar</button>
     <button onclick="cerrarDetalleReporte()" class="btn-modal btn-cancel">Cerrar</button>
   ` : `<button onclick="cerrarDetalleReporte()" class="btn-modal btn-cancel" style="flex:none;padding:10px 32px;">Cerrar</button>`;
@@ -715,11 +728,9 @@ function cerrarDetalleReporte() { document.getElementById('detalleReporteModal')
 
 async function gestionarReporte(id, estado) {
   try {
-    const accion_tomada = `Marcado como ${estado} por el administrador.`;
     const r = await fetch(`${BASE}/reportes/${id}`, {
-      method: 'PUT',
-      headers: HEADERS,
-      body: JSON.stringify({ estado, accion_tomada })
+      method: 'PUT', headers: HEADERS,
+      body: JSON.stringify({ estado, accion_tomada: `Marcado como ${estado} por el administrador.` })
     });
     const data = await r.json();
     if (data.success) {
@@ -728,11 +739,9 @@ async function gestionarReporte(id, estado) {
     } else {
       mostrarToast('Error: ' + (data.message || data.error), 'error');
     }
-  } catch(e) {
-    console.error('Error gestionarReporte:', e);
-    mostrarToast('Error de conexión.', 'error');
-  }
+  } catch(e) { mostrarToast('Error de conexión.', 'error'); }
 }
+
 function cerrarSesion() { localStorage.clear(); window.location.href = 'login.html'; }
 </script>
 </body>
