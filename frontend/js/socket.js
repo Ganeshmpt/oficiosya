@@ -2,7 +2,7 @@
 // socket.js — Cliente Socket.io para OficiosYA
 // ============================================================
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = 'https://oficiosya-backend.onrender.com';
 let socket = null;
 
 function iniciarSocket() {
