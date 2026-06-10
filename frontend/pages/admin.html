@@ -322,7 +322,7 @@ if (!session || !session.usuario?.is_admin) window.location.href = 'login.html';
 
 const TOKEN   = session.token;
 const HEADERS = { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
-const BASE    = 'http://localhost:3000/api';
+const BASE = 'https://oficiosya-backend.onrender.com/api';
 
 let _verificaciones  = [];
 let _filtroVerif     = 'todos';
