@@ -538,7 +538,7 @@
 const session = getSession();
 if (!session) window.location.href = 'login.html';
 const user = session?.usuario || {};
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://oficiosya-backend.onrender.com/api';
 let currentMode = 'cliente';
 let _stats      = null;
 let _notifs     = [];
