@@ -10,6 +10,7 @@ const {
   enviarAdvertencia,
   listarEventos,       // ← nuevo
   cancelarSolicitudAdmin,
+  resetPasswordUsuario
 } = require('../controllers/admin.controller');
 const { verificarToken, soloAdmin } = require('../middlewares/auth.middleware');
 
@@ -25,7 +26,7 @@ router.post('/reportes',                    verificarToken,            crearRepo
 // ── Verificaciones de documentos ──────────────────────
 router.get ('/verificaciones',              verificarToken, soloAdmin, listarVerificaciones);
 router.put ('/verificaciones/:id',          verificarToken, soloAdmin, gestionarVerificacion);
-
+router.put('/usuarios/:id/reset-password', verificarToken, soloAdmin, resetPasswordUsuario);
 // ── Trazabilidad (RNF4) ───────────────────────────────
 // GET /api/admin/eventos?tipo=solicitud_creada&usuario_id=5&limit=50
 router.get ('/eventos',                     verificarToken, soloAdmin, listarEventos);

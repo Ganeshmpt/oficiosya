@@ -1,5 +1,5 @@
 const pool = require('../config/db');
-
+const bcrypt = require('bcrypt');
 // ── Umbral de reportes para suspensión automática ─────
 const REPORTES_PARA_SUSPENSION = 3;
 
@@ -335,6 +335,7 @@ const cancelarSolicitudAdmin = async (req, res) => {
         JSON.stringify({ solicitud_id: id, origen: 'admin' })
       ]
     );
+    
 
     // Trazabilidad
     await registrarEvento({
@@ -350,6 +351,20 @@ const cancelarSolicitudAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno del servidor.' });
   }
 };
+// 10. Reset password de usuario (admin)
+
+const resetPasswordUsuario = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nueva_password } = req.body;
+    if (!nueva_password) return res.status(400).json({ success: false, message: 'La nueva contraseña es requerida.' });
+    const hash = await bcrypt.hash(nueva_password, 10);
+    await pool.query('UPDATE usuarios SET password = $1 WHERE id = $2', [hash, id]);
+    res.json({ success: true, message: 'Contraseña restablecida.' });
+  } catch(e) {
+    res.status(500).json({ success: false, message: 'Error al restablecer contraseña.' });
+  }
+};
 
 module.exports = {
   listarUsuarios,
@@ -360,5 +375,6 @@ module.exports = {
   gestionarVerificacion,
   enviarAdvertencia,
   listarEventos,
-  cancelarSolicitudAdmin,  // ← nuevo
+  cancelarSolicitudAdmin,
+  resetPasswordUsuario,  // ← nuevo
 };

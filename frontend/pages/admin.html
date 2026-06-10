@@ -396,6 +396,7 @@ let _verifIdRechazar = null;
               <button onclick="toggleBloqueo(${u.id}, ${bloqueado})" class="btn-action" style="${btnColor}">${btnText}</button>
               ${!u.verificado ? `<button onclick="abrirVerificarModal(${u.id}, '${nombreSeguro}')" class="btn-action" style="background:#DBEAFE;color:#1E40AF;">✔️ Verificar</button>` : ''}
               <button onclick="abrirAdvertenciaModal(${u.id}, '${nombreSeguro}')" class="btn-action" style="background:#FEF3C7;color:#92400E;">⚠️ Advertir</button>
+<button onclick="abrirResetPass(${u.id}, '${nombreSeguro}')" class="btn-action" style="background:#F0FDF4;color:#065F46;">🔑 Reset pass</button>
             </td>
           </tr>`;
         }).join('')
@@ -754,6 +755,26 @@ async function gestionarReporte(id, estado) {
     } else {
       mostrarToast('Error: ' + (data.message || data.error), 'error');
     }
+  } catch(e) { mostrarToast('Error de conexión.', 'error'); }
+}
+
+// ── RESET PASSWORD ────────────────────────────────────
+let resetPassUsuarioId = null;
+function abrirResetPass(id, nombre) {
+  resetPassUsuarioId = id;
+  const pass = prompt(`Nueva contraseña para ${nombre}:`);
+  if (!pass || pass.length < 8) { mostrarToast('Mínimo 8 caracteres.', 'error'); return; }
+  ejecutarResetPass(pass);
+}
+async function ejecutarResetPass(nueva_password) {
+  try {
+    const r = await fetch(`${BASE}/admin/usuarios/${resetPassUsuarioId}/reset-password`, {
+      method: 'PUT', headers: HEADERS,
+      body: JSON.stringify({ nueva_password })
+    });
+    const data = await r.json();
+    if (data.success) mostrarToast('Contraseña restablecida.', 'success');
+    else mostrarToast('Error: ' + (data.message), 'error');
   } catch(e) { mostrarToast('Error de conexión.', 'error'); }
 }
 
