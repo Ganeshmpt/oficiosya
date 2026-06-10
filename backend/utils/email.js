@@ -1,19 +1,9 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-  service: process.env.MAIL_SERVICE || 'gmail',
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// ── Verificar conexión al iniciar ─────────────────────
-transporter.verify((err) => {
-  if (err) console.warn('⚠️  Email no configurado:', err.message);
-  else     console.log('📧 Servicio de email listo.');
-});
+const MAIL_FROM = 'OficiosYA <onboarding@resend.dev>';
 
 // ── Template base ─────────────────────────────────────
 function htmlBase(titulo, contenido) {
@@ -67,12 +57,13 @@ async function enviarRecuperacion({ email, nombre, token, resetUrl }) {
     <p class="warn">O copia este enlace en tu navegador:<br>${resetUrl}</p>
   `);
 
-  await transporter.sendMail({
-    from:    process.env.MAIL_FROM || 'OficiosYA <noreply@oficiosya.com>',
+  const { error } = await resend.emails.send({
+    from:    MAIL_FROM,
     to:      email,
     subject: '🔑 Recupera tu contraseña — OficiosYA',
     html,
   });
+  if (error) throw new Error(error.message);
 }
 
 // ── Email: bienvenida / verificar email ───────────────
@@ -86,13 +77,15 @@ async function enviarBienvenida({ email, nombre, verifyUrl }) {
     <p class="warn">Este enlace expira en 24 horas.</p>
   `);
 
-  await transporter.sendMail({
-    from:    process.env.MAIL_FROM || 'OficiosYA <noreply@oficiosya.com>',
+  const { error } = await resend.emails.send({
+    from:    MAIL_FROM,
     to:      email,
     subject: '✅ Verifica tu cuenta — OficiosYA',
     html,
   });
+  if (error) throw new Error(error.message);
 }
+
 // ── Email: resolución de reporte ──────────────────────
 async function enviarResolucionReporte({ email, nombre, motivo, estado, accion }) {
   const esResuelto = estado === 'resuelto';
@@ -112,12 +105,13 @@ async function enviarResolucionReporte({ email, nombre, motivo, estado, accion }
     <p class="warn">Gracias por ayudarnos a mantener una comunidad segura.</p>
   `);
 
-  await transporter.sendMail({
-    from:    process.env.MAIL_FROM || 'OficiosYA <noreply@oficiosya.com>',
+  const { error } = await resend.emails.send({
+    from:    MAIL_FROM,
     to:      email,
     subject: `${esResuelto ? '✅' : '📋'} Tu reporte fue ${estado} — OficiosYA`,
     html,
   });
+  if (error) throw new Error(error.message);
 }
 
 module.exports = { enviarRecuperacion, enviarBienvenida, enviarResolucionReporte };
