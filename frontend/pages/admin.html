@@ -689,27 +689,33 @@ function cerrarModalReporte() { document.getElementById('reporteModal').style.di
 async function ejecutarReporte() {
   const motivo = document.getElementById('reporteMotivoInput').value.trim();
   if (!motivo) { mostrarToast('Escribe un motivo para el reporte.', 'error'); return; }
+  
+  // Guardar datos antes de cerrar el modal
+  const tipo = reporteData.tipo;
+  const id   = reporteData.id;
+  const reportado_id = reporteData.reportado_id;
+  
   try {
     const r = await fetch(`${BASE}/reportes`, {
       method: 'POST', headers: HEADERS,
-      body: JSON.stringify({ tipo: reporteData.tipo, referencia_id: reporteData.id, reportado_id: reporteData.reportado_id, motivo, descripcion: motivo })
+      body: JSON.stringify({ tipo, referencia_id: id, reportado_id, motivo, descripcion: motivo })
     });
     const data = await r.json();
     cerrarModalReporte();
     if (data.success) {
-  if (reporteData.tipo === 'solicitud') {
-    await fetch(`${BASE}/admin/solicitudes/${reporteData.id}/cancelar`, {
-      method: 'PUT', headers: HEADERS,
-      body: JSON.stringify({ motivo })
-    });
-  }
-  mostrarToast('Reporte enviado. La solicitud fue cancelada.', 'success');
-  setTimeout(() => window.location.reload(), 1500);
-}
-    else { mostrarToast('Error: ' + (data.message || data.error), 'error'); }
+      if (tipo === 'solicitud') {
+        await fetch(`${BASE}/admin/solicitudes/${id}/cancelar`, {
+          method: 'PUT', headers: HEADERS,
+          body: JSON.stringify({ motivo })
+        });
+      }
+      mostrarToast('Reporte enviado. La solicitud fue cancelada.', 'success');
+      setTimeout(() => window.location.reload(), 1500);
+    } else {
+      mostrarToast('Error: ' + (data.message || data.error), 'error');
+    }
   } catch(e) { mostrarToast('Error de conexión.', 'error'); }
 }
-
 // ── DETALLE REPORTE ───────────────────────────────────
 function verDetalleReporte(r) {
   const estadoClass  = r.estado === 'pendiente' ? 'b-pendiente' : r.estado === 'resuelto' ? 'b-resuelto' : 'b-rechazado';
