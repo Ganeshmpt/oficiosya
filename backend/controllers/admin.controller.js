@@ -306,6 +306,50 @@ const listarEventos = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al obtener eventos.' });
   }
 };
+// 9. Cancelar solicitud por contenido inapropiado (admin)
+const cancelarSolicitudAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivo } = req.body;
+
+    const result = await pool.query(
+      `UPDATE solicitudes SET estado = 'cancelada', updatedat = NOW()
+       WHERE id = $1 AND estado = 'abierta'
+       RETURNING id, titulo, cliente_id`,
+      [id]
+    );
+
+    if (!result.rows.length)
+      return res.status(404).json({ success: false, message: 'Solicitud no encontrada o ya no está abierta.' });
+
+    const { titulo, cliente_id } = result.rows[0];
+
+    // Notificar al cliente
+    await pool.query(
+      `INSERT INTO notificaciones (usuario_id, tipo, titulo, mensaje, leida, datos)
+       VALUES ($1, 'advertencia', '❌ Solicitud cancelada por moderación',
+       $2, false, $3)`,
+      [
+        cliente_id,
+        `Tu solicitud "${titulo}" fue cancelada por el administrador. Motivo: ${motivo || 'Contenido inapropiado'}`,
+        JSON.stringify({ solicitud_id: id, origen: 'admin' })
+      ]
+    );
+
+    // Trazabilidad
+    await registrarEvento({
+      usuario_id: req.usuario.id,
+      tipo: 'solicitud_cancelada_admin',
+      descripcion: `Admin canceló la solicitud #${id}: ${motivo || ''}`,
+      datos: { solicitud_id: id, admin_id: req.usuario.id }
+    });
+
+    res.status(200).json({ success: true, message: 'Solicitud cancelada correctamente.' });
+  } catch (error) {
+    console.error('Error al cancelar solicitud:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+  }
+};
 
 module.exports = {
   listarUsuarios,
@@ -316,4 +360,5 @@ module.exports = {
   gestionarVerificacion,
   enviarAdvertencia,
   listarEventos,
+  cancelarSolicitudAdmin,  // ← nuevo
 };

@@ -9,6 +9,7 @@ const {
   gestionarVerificacion,
   enviarAdvertencia,
   listarEventos,       // ← nuevo
+  cancelarSolicitudAdmin,
 } = require('../controllers/admin.controller');
 const { verificarToken, soloAdmin } = require('../middlewares/auth.middleware');
 
@@ -28,5 +29,6 @@ router.put ('/verificaciones/:id',          verificarToken, soloAdmin, gestionar
 // ── Trazabilidad (RNF4) ───────────────────────────────
 // GET /api/admin/eventos?tipo=solicitud_creada&usuario_id=5&limit=50
 router.get ('/eventos',                     verificarToken, soloAdmin, listarEventos);
-
+// ── Solicitudes ───────────────────────────────────────
+router.put('/solicitudes/:id/cancelar', verificarToken, soloAdmin, cancelarSolicitudAdmin);
 module.exports = router;

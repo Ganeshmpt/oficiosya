@@ -696,7 +696,16 @@ async function ejecutarReporte() {
     });
     const data = await r.json();
     cerrarModalReporte();
-    if (data.success) { mostrarToast('Reporte enviado. La solicitud fue cancelada.', 'success'); setTimeout(() => window.location.reload(), 1500); }
+    if (data.success) {
+  if (reporteData.tipo === 'solicitud') {
+    await fetch(`${BASE}/admin/solicitudes/${reporteData.id}/cancelar`, {
+      method: 'PUT', headers: HEADERS,
+      body: JSON.stringify({ motivo })
+    });
+  }
+  mostrarToast('Reporte enviado. La solicitud fue cancelada.', 'success');
+  setTimeout(() => window.location.reload(), 1500);
+}
     else { mostrarToast('Error: ' + (data.message || data.error), 'error'); }
   } catch(e) { mostrarToast('Error de conexión.', 'error'); }
 }
