@@ -1,7 +1,7 @@
 // ============================================================
 // api.js — Conector central con el backend
 // ============================================================
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://oficiosya-backend.onrender.com/api';
 
 function getSession()     { try { return JSON.parse(localStorage.getItem('oya_session')); } catch { return null; } }
 function setSession(data) { localStorage.setItem('oya_session', JSON.stringify(data)); }
